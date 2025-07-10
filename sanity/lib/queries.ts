@@ -32,3 +32,9 @@ export const postQuery = defineQuery(`
     ${postFields}
   }
 `);
+
+export const postsCreatedTodayQuery = defineQuery(`
+  *[_type == "post" && dateTime(date) >= dateTime(now()) - 24*60*60 && dateTime(date) < dateTime(now()) + 1] | order(date desc, _updatedAt desc) {
+    ${postFields}
+  }
+`);

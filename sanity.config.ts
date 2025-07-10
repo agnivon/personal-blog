@@ -6,20 +6,20 @@ import { visionTool } from "@sanity/vision";
 import { PluginOptions, defineConfig } from "sanity";
 import { unsplashImageAsset } from "sanity-plugin-asset-source-unsplash";
 import {
-  presentationTool,
   defineDocuments,
   defineLocations,
+  presentationTool,
   type DocumentLocation,
 } from "sanity/presentation";
 import { structureTool } from "sanity/structure";
 
 import { apiVersion, dataset, projectId, studioUrl } from "@/sanity/lib/api";
-import { pageStructure, singletonPlugin } from "@/sanity/plugins/settings";
-import { assistWithPresets } from "@/sanity/plugins/assist";
-import author from "@/sanity/schemas/documents/author";
-import post from "@/sanity/schemas/documents/post";
-import settings from "@/sanity/schemas/singletons/settings";
 import { resolveHref } from "@/sanity/lib/utils";
+import { assistWithPresets } from "@/sanity/plugins/assist";
+import { pageStructure, singletonPlugin } from "@/sanity/plugins/settings";
+import settings from "@/sanity/schemas/singletons/settings";
+import author from "./sanity/schemas/documents/author";
+import post from "./sanity/schemas/documents/post";
 
 const homeLocation = {
   title: "Home",
