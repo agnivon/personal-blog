@@ -3,6 +3,7 @@
   "scripts": {
     "predev": "npm run typegen",
     "convex-dev": "convex dev",
+    "convex-deploy": "convex deploy",
     "next-dev": "next --turbo",
     "dev": "concurrently \"convex dev\" \"next --turbo\"",
     "test": "vitest",
