@@ -1,6 +1,5 @@
-import { defineQuery } from "next-sanity";
 import type { Metadata, ResolvingMetadata } from "next";
-import { type PortableTextBlock } from "next-sanity";
+import { defineQuery, type PortableTextBlock } from "next-sanity";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -11,10 +10,10 @@ import DateComponent from "@/components/date";
 import MoreStories from "@/components/more-stories";
 import PortableText from "@/components/portable-text";
 
+import { generatePostMetadata } from "@/config/metadata.config";
 import * as demo from "@/sanity/lib/demo";
 import { sanityFetch } from "@/sanity/lib/fetch";
 import { postQuery, settingsQuery } from "@/sanity/lib/queries";
-import { resolveOpenGraphImage } from "@/sanity/lib/utils";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -36,22 +35,7 @@ export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const post = await sanityFetch({
-    query: postQuery,
-    params,
-    stega: false,
-  });
-  const previousImages = (await parent).openGraph?.images || [];
-  const ogImage = resolveOpenGraphImage(post?.coverImage);
-
-  return {
-    authors: post?.author?.name ? [{ name: post?.author?.name }] : [],
-    title: post?.title,
-    description: post?.excerpt,
-    openGraph: {
-      images: ogImage ? [ogImage, ...previousImages] : previousImages,
-    },
-  } satisfies Metadata;
+  return generatePostMetadata({ slug: (await params).slug }, parent);
 }
 
 export default async function PostPage({ params }: Props) {

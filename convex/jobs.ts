@@ -11,19 +11,23 @@ export const postDailyArticle = internalAction({
           internal.queries.getTodaysTopics,
           {}
         );
-        console.log(todaysTopics);
-        await Promise.all(
-          todaysTopics.map(async ({ topic }, idx) => {
-            console.log(`Scheduling ${topic}`);
-            return ctx.scheduler.runAfter(
-              idx * 1000 * 60,
-              internal.actions.generateArticle,
-              {
-                topic: topic,
-              }
-            );
-          })
-        );
+        if (todaysTopics.length > 0) {
+          console.info(`Found ${todaysTopics.length} topics`);
+          await Promise.all(
+            todaysTopics.map(async ({ topic }, idx) => {
+              console.log(`Scheduling ${topic}`);
+              return ctx.scheduler.runAfter(
+                idx * 1000 * 60,
+                internal.actions.generateArticle,
+                {
+                  topic: topic,
+                }
+              );
+            })
+          );
+        } else {
+          console.info("No topics found");
+        }
       }
     } catch (e) {
       console.error(e);

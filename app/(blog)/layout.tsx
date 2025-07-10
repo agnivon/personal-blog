@@ -14,36 +14,10 @@ import { settingsQuery } from "@/sanity/lib/queries";
 import { resolveOpenGraphImage } from "@/sanity/lib/utils";
 import Footer from "../../components/footer";
 import { ConvexClientProvider } from "@/components/convex-client-provider";
+import { generateSiteMetadata } from "@/config/metadata.config";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await sanityFetch({
-    query: settingsQuery,
-    // Metadata should never contain stega
-    stega: false,
-  });
-  const title = settings?.title || demo.title;
-  const description = settings?.description || demo.description;
-
-  const ogImage = resolveOpenGraphImage(settings?.ogImage);
-  let metadataBase: URL | undefined = undefined;
-  try {
-    metadataBase = settings?.ogImage?.metadataBase
-      ? new URL(settings.ogImage.metadataBase)
-      : undefined;
-  } catch {
-    // ignore
-  }
-  return {
-    metadataBase,
-    title: {
-      template: `%s | ${title}`,
-      default: title,
-    },
-    description: toPlainText(description),
-    openGraph: {
-      images: ogImage ? [ogImage] : [],
-    },
-  };
+  return generateSiteMetadata();
 }
 
 const inter = Inter({
