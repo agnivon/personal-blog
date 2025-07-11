@@ -12,7 +12,7 @@ const Footer = async () => {
       <div className="container mx-auto px-5">
         {footer.length > 0 ? (
           <PortableText
-            className="prose-sm text-pretty bottom-0 w-full max-w-none bg-white py-12 text-center md:py-20"
+            className="prose-sm text-pretty bottom-0 w-full !max-w-none py-12 text-center md:py-20"
             value={footer as PortableTextBlock[]}
           />
         ) : (
@@ -23,7 +23,7 @@ const Footer = async () => {
             <div className="flex flex-col items-center justify-center lg:w-1/2 lg:flex-row lg:pl-4">
               <a
                 href="https://nextjs.org/docs"
-                className="mx-3 mb-6 border border-black bg-black py-3 px-12 font-bold text-white transition-colors duration-200 hover:bg-white hover:text-black lg:mb-0 lg:px-8"
+                className="mx-3 mb-6 border bg-foreground py-3 px-12 font-bold text-background transition-colors duration-200 hover:bg-background hover:text-foreground lg:mb-0 lg:px-8"
               >
                 Read Documentation
               </a>

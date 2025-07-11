@@ -38,3 +38,15 @@ export const postsCreatedTodayQuery = defineQuery(`
     ${postFields}
   }
 `);
+
+export const paginatedPostsQuery = defineQuery(`
+  *[_type == "post" && defined(slug.current)] 
+    | order(date desc, _updatedAt desc) 
+    [$offset...$end] {
+      ${postFields}
+    }
+`);
+
+export const totalPostCountQuery = defineQuery(`
+  count(*[_type == "post" && defined(slug.current)])
+`);

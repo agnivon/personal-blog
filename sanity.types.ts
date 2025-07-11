@@ -608,6 +608,48 @@ export type PostQueryResult = {
 // Variable: postsCreatedTodayQuery
 // Query: *[_type == "post" && dateTime(date) >= dateTime(now()) - 24*60*60 && dateTime(date) < dateTime(now()) + 1] | order(date desc, _updatedAt desc) {      _id,  "status": select(_originalId in path("drafts.**") => "draft", "published"),  "title": coalesce(title, "Untitled"),  "slug": slug.current,  excerpt,  coverImage,  "date": coalesce(date, _updatedAt),  "author": author->{"name": coalesce(name, "Anonymous"), picture},  }
 export type PostsCreatedTodayQueryResult = Array<never>;
+// Variable: paginatedPostsQuery
+// Query: *[_type == "post" && defined(slug.current)]     | order(date desc, _updatedAt desc)     [$offset...$end] {        _id,  "status": select(_originalId in path("drafts.**") => "draft", "published"),  "title": coalesce(title, "Untitled"),  "slug": slug.current,  excerpt,  coverImage,  "date": coalesce(date, _updatedAt),  "author": author->{"name": coalesce(name, "Anonymous"), picture},    }
+export type PaginatedPostsQueryResult = Array<{
+  _id: string;
+  status: "draft" | "published";
+  title: string | "Untitled";
+  slug: string | null;
+  excerpt: string | null;
+  coverImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  date: string;
+  author: {
+    name: string | "Anonymous";
+    picture: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      alt?: string;
+      _type: "image";
+    } | null;
+  } | null;
+}>;
+// Variable: totalPostCountQuery
+// Query: count(*[_type == "post" && defined(slug.current)])
+export type TotalPostCountQueryResult = number;
 
 // Query TypeMap
 import "@sanity/client";
@@ -619,5 +661,7 @@ declare module "@sanity/client" {
     "\n  *[_type == \"post\" && _id != $skip && defined(slug.current)] | order(date desc, _updatedAt desc) [0...$limit] {\n    \n  _id,\n  \"status\": select(_originalId in path(\"drafts.**\") => \"draft\", \"published\"),\n  \"title\": coalesce(title, \"Untitled\"),\n  \"slug\": slug.current,\n  excerpt,\n  coverImage,\n  \"date\": coalesce(date, _updatedAt),\n  \"author\": author->{\"name\": coalesce(name, \"Anonymous\"), picture},\n\n  }\n": MoreStoriesQueryResult;
     "\n  *[_type == \"post\" && slug.current == $slug] [0] {\n    content,\n    \n  _id,\n  \"status\": select(_originalId in path(\"drafts.**\") => \"draft\", \"published\"),\n  \"title\": coalesce(title, \"Untitled\"),\n  \"slug\": slug.current,\n  excerpt,\n  coverImage,\n  \"date\": coalesce(date, _updatedAt),\n  \"author\": author->{\"name\": coalesce(name, \"Anonymous\"), picture},\n\n  }\n": PostQueryResult;
     "\n  *[_type == \"post\" && dateTime(date) >= dateTime(now()) - 24*60*60 && dateTime(date) < dateTime(now()) + 1] | order(date desc, _updatedAt desc) {\n    \n  _id,\n  \"status\": select(_originalId in path(\"drafts.**\") => \"draft\", \"published\"),\n  \"title\": coalesce(title, \"Untitled\"),\n  \"slug\": slug.current,\n  excerpt,\n  coverImage,\n  \"date\": coalesce(date, _updatedAt),\n  \"author\": author->{\"name\": coalesce(name, \"Anonymous\"), picture},\n\n  }\n": PostsCreatedTodayQueryResult;
+    "\n  *[_type == \"post\" && defined(slug.current)] \n    | order(date desc, _updatedAt desc) \n    [$offset...$end] {\n      \n  _id,\n  \"status\": select(_originalId in path(\"drafts.**\") => \"draft\", \"published\"),\n  \"title\": coalesce(title, \"Untitled\"),\n  \"slug\": slug.current,\n  excerpt,\n  coverImage,\n  \"date\": coalesce(date, _updatedAt),\n  \"author\": author->{\"name\": coalesce(name, \"Anonymous\"), picture},\n\n    }\n": PaginatedPostsQueryResult;
+    "\n  count(*[_type == \"post\" && defined(slug.current)])\n": TotalPostCountQueryResult;
   }
 }

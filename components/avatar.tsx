@@ -4,8 +4,8 @@ import type { Author } from "@/sanity.types";
 import { urlForImage } from "@/sanity/lib/utils";
 
 interface Props {
-  name: string;
-  picture: Exclude<Author["picture"], undefined> | null;
+  name: string | undefined;
+  picture: Author["picture"] | null;
 }
 
 export default function Avatar({ name, picture }: Props) {
