@@ -85,6 +85,24 @@ export default async function PostPage({ params }: Props) {
             value={post.content as PortableTextBlock[]}
           />
         )}
+        {/* {post.sources && post.sources?.length > 0 && (
+          <div className="mt-20">
+            <h2 className="text-balance mb-12 text-3xl font-bold leading-tight tracking-tighter md:text-4xl md:leading-none lg:text-5xl">
+              Sources
+            </h2>
+            <ul className="list-disc">
+              {post.sources?.map((e) => {
+                return (
+                  <li key={e._key}>
+                    <a target="_blank" href={e.uri} className="hover:underline">
+                      {e.name}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )} */}
       </article>
       <aside>
         <hr className="border-accent-2 mb-24 mt-28" />

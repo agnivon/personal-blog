@@ -91,6 +91,32 @@ export default defineType({
       type: "reference",
       to: [{ type: authorType.name }],
     }),
+    defineField({
+      name: "sources",
+      title: "Sources",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          name: "source",
+          title: "Source",
+          fields: [
+            {
+              name: "name",
+              title: "Name",
+              type: "string",
+              validation: (rule) => rule.required(),
+            },
+            {
+              name: "uri",
+              title: "URI",
+              type: "url",
+              validation: (rule) => rule.required(),
+            },
+          ],
+        },
+      ],
+    }),
   ],
   preview: {
     select: {

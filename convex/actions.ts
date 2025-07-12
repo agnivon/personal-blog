@@ -48,22 +48,33 @@ export const generateArticle = internalAction({
   },
   handler: async (ctx, args) => {
     try {
-      const content = await genai.generateArticleContent(args.topic);
+      const { text: content, sources } = await genai.generateArticleContent(
+        args.topic
+      );
       if (!content) throw Error("Article content generation failed");
+      console.log("Generated content");
       const titleAndExcerpt =
         await genai.extractArticleTitleAndExcerpt(content);
-      //   console.log(titleAndExcerpt);
+      // console.log(titleAndExcerpt);
       if (!titleAndExcerpt) throw Error("Article structuring failed");
       const { title, excerpt } = titleAndExcerpt;
+      console.log(`Generated title: ${title} and excerpt: ${excerpt}`);
       //   console.log({ title, excerpt, content });
       const image = await genai.generateArticleCoverImage(title, excerpt);
       if (!image) throw Error("Cover image generation failed");
+      console.log("Generated cover image");
       /* if (image.data) {
       const buffer = Buffer.from(image.data, "base64");
       const blob = new Blob([buffer], { type: image.mimeType });
       await ctx.storage.store(blob);
     } */
-      const result = await createPost({ title, excerpt, content, image });
+      const result = await createPost({
+        title,
+        excerpt,
+        content,
+        sources,
+        image,
+      });
       console.log(`Created post ${result._id}`);
       return result;
     } catch (e) {

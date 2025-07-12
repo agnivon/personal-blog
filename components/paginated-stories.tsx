@@ -37,7 +37,7 @@ export default async function PaginatedStories({
           className="mx-auto mb-6 border bg-foreground py-3 px-12 font-bold text-background transition-colors duration-200 hover:bg-background hover:text-foreground lg:px-8 flex w-fit"
           scroll={false}
         >
-          <ChevronDownIcon /> See More
+          <ChevronDownIcon /> {`See More (${totalPosts - page * pageSize})`}
         </Link>
       )}
     </>

@@ -1,7 +1,7 @@
 "use node";
 
 import { apiVersion, dataset, projectId } from "@/sanity/lib/api";
-import { Blob as GoogleGenAIBlob } from "@google/genai";
+import { Blob as GoogleGenAIBlob, GroundingChunk } from "@google/genai";
 import { htmlToBlocks } from "@portabletext/block-tools";
 import { createClient } from "@sanity/client";
 import { Schema } from "@sanity/schema";
@@ -97,17 +97,19 @@ export async function createPost({
   title,
   excerpt,
   content,
+  sources = [],
   image,
 }: {
   title: string;
   excerpt: string;
   content: string;
+  sources?: GroundingChunk[];
   image: GoogleGenAIBlob;
 }) {
   const slug = title.toLowerCase().replaceAll(" ", "-");
-  console.log("Article slug", slug);
+  console.log("Article slug:", slug);
   const imageAssetId = await uploadImage({ image, filename: slug });
-  console.log("Cover image asset ID", imageAssetId);
+  console.log("Cover image asset ID:", imageAssetId);
   const doc = {
     // _id: `post-${nanoid()}`,
     _type: "post",
@@ -120,6 +122,11 @@ export async function createPost({
       _type: "reference",
       _ref: process.env.SANITY_BLOG_AUTHOR_ID, // ensure this author exists
     },
+    sources: sources.map((e) => ({
+      _key: e.web?.uri,
+      name: e.web?.title,
+      uri: e.web?.uri,
+    })),
     coverImage: {
       _type: "image",
       asset: { _type: "reference", _ref: imageAssetId },

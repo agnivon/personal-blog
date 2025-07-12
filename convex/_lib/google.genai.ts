@@ -71,6 +71,7 @@ function addCitations(response: GenerateContentResponse) {
 
   return text;
 }
+
 export async function generateArticleContent(topic: string) {
   // Configure generation settings
   const config: GenerateContentConfig = {
@@ -84,7 +85,10 @@ export async function generateArticleContent(topic: string) {
     contents: `Generate a blog post for the topic: ${topic}`,
     config,
   });
-  return response.text;
+  return {
+    text: response.text,
+    sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [],
+  };
 }
 
 export async function generateArticleTitleAndExcerpt(content: string) {
