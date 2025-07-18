@@ -6,9 +6,9 @@ import * as genai from "./_lib/google.genai";
 import { createPost } from "./_lib/sanity";
 
 export const generateArticleContent = internalAction({
-  args: { topic: v.string() },
+  args: { topic: v.string(), instructions: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    return genai.generateArticleContent(args.topic);
+    return genai.generateArticleContent(args.topic, args.instructions);
   },
 });
 
@@ -45,11 +45,13 @@ export const uploadArticle = internalAction({
 export const generateArticle = internalAction({
   args: {
     topic: v.string(),
+    instructions: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     try {
       const { text: content, sources } = await genai.generateArticleContent(
-        args.topic
+        args.topic,
+        args.instructions
       );
       if (!content) throw Error("Article content generation failed");
       console.log("Generated content");

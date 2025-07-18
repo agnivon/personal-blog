@@ -72,7 +72,10 @@ function addCitations(response: GenerateContentResponse) {
   return text;
 }
 
-export async function generateArticleContent(topic: string) {
+export async function generateArticleContent(
+  topic: string,
+  instructions?: string
+) {
   // Configure generation settings
   const config: GenerateContentConfig = {
     systemInstruction: blogGenerationSystemInstruction,
@@ -82,7 +85,7 @@ export async function generateArticleContent(topic: string) {
 
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash",
-    contents: `Generate a blog post for the topic: ${topic}`,
+    contents: `Generate a blog post for the topic: ${topic}.\nAdditional Instructions: ${instructions || "No additional instructions"}`,
     config,
   });
   return {
