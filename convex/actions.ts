@@ -3,7 +3,7 @@
 import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
 import * as genai from "./_lib/google.genai";
-import { createPost } from "./_lib/sanity";
+import { createPost, getPost, updatePostCoverImage } from "./_lib/sanity";
 
 export const generateArticleContent = internalAction({
   args: { topic: v.string(), instructions: v.optional(v.string()) },
@@ -78,6 +78,30 @@ export const generateArticle = internalAction({
         image,
       });
       console.log(`Created post ${result._id}`);
+      return result;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  },
+});
+
+export const updateArticleCoverImage = internalAction({
+  args: {
+    id: v.string(),
+  },
+  handler: async (ctx, args) => {
+    try {
+      const post = await getPost(args.id);
+      if (!post) throw Error("Post not found");
+      const image = await genai.generateArticleCoverImage(
+        post.title,
+        post.excerpt || ""
+      );
+      if (!image) throw Error("Cover image generation failed");
+      console.log("Generated cover image");
+      const result = await updatePostCoverImage(args.id, post.title, image);
+      console.log(`Updated cover image for post ${args.id}`);
       return result;
     } catch (e) {
       console.error(e);

@@ -1,6 +1,7 @@
 "use node";
 
 import { apiVersion, dataset, projectId } from "@/sanity/lib/api";
+import { postByIdQuery } from "@/sanity/lib/queries";
 import { Blob as GoogleGenAIBlob, GroundingChunk } from "@google/genai";
 import { htmlToBlocks } from "@portabletext/block-tools";
 import { createClient } from "@sanity/client";
@@ -93,6 +94,10 @@ async function uploadImage({
   }
 }
 
+function getSlug(title: string): string {
+  return title.toLowerCase().replaceAll(" ", "-");
+}
+
 export async function createPost({
   title,
   excerpt,
@@ -106,7 +111,7 @@ export async function createPost({
   sources?: GroundingChunk[];
   image: GoogleGenAIBlob;
 }) {
-  const slug = title.toLowerCase().replaceAll(" ", "-");
+  const slug = getSlug(title);
   console.log("Article slug:", slug);
   const imageAssetId = await uploadImage({ image, filename: slug });
   console.log("Cover image asset ID:", imageAssetId);
@@ -135,4 +140,28 @@ export async function createPost({
   };
 
   return client.create(doc);
+}
+
+export function getPost(id: string) {
+  return client.fetch(postByIdQuery, { id });
+}
+
+export async function updatePostCoverImage(
+  id: string,
+  title: string,
+  image: GoogleGenAIBlob
+) {
+  const slug = getSlug(title);
+  console.log("Article slug:", slug);
+  const imageAssetId = await uploadImage({ image, filename: slug });
+  console.log("Cover image asset ID:", imageAssetId);
+  return client
+    .patch(id)
+    .set({
+      coverImage: {
+        _type: "image",
+        asset: { _type: "reference", _ref: imageAssetId },
+      },
+    })
+    .commit();
 }

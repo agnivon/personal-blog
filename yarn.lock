@@ -3300,6 +3300,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@opentelemetry/api@npm:^1.9.0":
+  version: 1.9.0
+  resolution: "@opentelemetry/api@npm:1.9.0"
+  checksum: 10c0/9aae2fe6e8a3a3eeb6c1fdef78e1939cf05a0f37f8a4fae4d6bf2e09eb1e06f966ece85805626e01ba5fab48072b94f19b835449e58b6d26720ee19a58298add
+  languageName: node
+  linkType: hard
+
 "@oxlint/darwin-arm64@npm:1.6.0":
   version: 1.6.0
   resolution: "@oxlint/darwin-arm64@npm:1.6.0"
@@ -13238,6 +13245,7 @@ __metadata:
   dependencies:
     "@edge-runtime/vm": "npm:^5.0.0"
     "@google/genai": "npm:^1.8.0"
+    "@opentelemetry/api": "npm:^1.9.0"
     "@portabletext/block-tools": "npm:^1.1.37"
     "@radix-ui/react-dropdown-menu": "npm:^2.1.15"
     "@radix-ui/react-slot": "npm:^1.2.3"

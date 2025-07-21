@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "predev": "npm run typegen",
+    "predev": "yarn typegen",
     "convex-dev": "convex dev",
     "convex-deploy": "convex deploy",
     "next-dev": "next --turbo",
@@ -10,7 +10,7 @@
     "test:once": "vitest run",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:coverage": "vitest run --coverage --coverage.reporter=text",
-    "prebuild": "npm run typegen",
+    "prebuild": "yarn typegen",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.8.0",
+    "@opentelemetry/api": "^1.9.0",
     "@portabletext/block-tools": "^1.1.37",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@radix-ui/react-slot": "^1.2.3",
