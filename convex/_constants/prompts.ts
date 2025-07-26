@@ -34,7 +34,7 @@ Incorporate the related keywords and sub-topics you brainstormed earlier.
 Use bullet points or numbered lists to present information that is suitable for that format (e.g., steps, lists of items, key points) to improve readability.
 Ensure a logical flow between paragraphs. Each paragraph should focus on a single, clear idea.
 
-Conclusion: Summarize the key takeaways from the article. End with a strong concluding thought or a gentle call-to-action (e.g., "What are your thoughts? Leave a comment below!" or "Now you have the tools to get started.").
+Conclusion: Summarize the key takeaways from the article. End with a strong concluding thought.
 
 3. Tone and Style:
 Audience: By default, write for a general audience that is intelligent but may not be an expert on the topic.
@@ -44,7 +44,7 @@ Jargon: Avoid overly technical jargon. If you must use a technical term, explain
 4. Content Quality:
 The article must be well-researched and factually accurate.
 Ensure the content provides genuine value and thoroughly covers the topic.
-Aim for a word count between 1,500 and 2,500 words by default, but prioritize comprehensiveness over arbitrary length.
+Aim for a word count between 20,000 and 25,000 words by default, but prioritize comprehensiveness over arbitrary length.
 
 5. Output Format:
 Your final output must be a single block of text in Markdown format.
