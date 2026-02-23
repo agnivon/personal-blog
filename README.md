@@ -1,310 +1,331 @@
-# A statically generated blog example using Next.js and Sanity
+# 🖊️ Personal Blog
 
-![Screenshot of Sanity Studio using Presentation Tool to do Visual Editing](https://github.com/sanity-io/next.js/assets/81981/59ecd9d6-7a78-41c6-95f7-275f66fe3c9d)
+An AI-powered, auto-publishing personal blog built with **Next.js 15**, **Sanity CMS**, **Convex**, and **Google Gemini**. The platform autonomously generates and publishes blog articles on a daily schedule — complete with AI-written content, cover images, source citations, and structured metadata — while also supporting traditional manual authoring through Sanity Studio.
 
-This starter is a statically generated blog that uses Next.js App Router for the frontend and [Sanity][sanity-homepage] to handle its content. It comes with a native Sanity Studio that offers features like real-time collaboration and visual editing with live updates using [Presentation][presentation].
+## ✨ Features
 
-The Studio connects to Sanity Content Lake, which gives you hosted content APIs with a flexible query language, on-demand image transformations, powerful patching, and more. You can use this starter to kick-start a blog or learn these technologies.
+### 🤖 AI-Powered Content Generation
+- **Automated daily article publishing** via Convex cron jobs that trigger at a configurable schedule
+- **Topic-driven generation** — schedule topics in advance via the Convex dashboard with optional custom instructions
+- **Google Gemini 2.5 Flash** for article content generation with Google Search grounding for factual accuracy and inline source citations
+- **AI-generated cover images** using Gemini's image generation capabilities
+- **Automatic title & excerpt extraction** from generated content using structured JSON output
+- **Source attribution** — grounding chunks from Google Search are stored and displayed alongside each post
 
-## Features
+### 📝 Content Management
+- **Sanity Studio** embedded at `/studio` for a native, customizable authoring experience
+- **Real-time visual editing** with Sanity Presentation Tool for side-by-side live preview
+- **Draft Mode** with seamless toggling for content preview before publishing
+- **Block content** support via Portable Text with Markdown-to-block conversion for AI-generated content
+- **Unsplash integration** for easy image sourcing and hotspot/crop controls
+- **Sanity AI Assist** preconfigured for image alt text generation
 
-- A performant, static blog with editable posts, authors, and site settings
-- TypeScript setup with [Sanity TypeGen](https://www.sanity.io/docs/sanity-typegen)
-- A native and customizable authoring environment, accessible on `yourblog.com/studio`
-- Real-time and collaborative content editing with fine-grained revision history
-- Side-by-side instant content preview that works across your whole site
-- Support for block content and the most advanced custom fields capability in the industry
-- Incremental Static Revalidation; no need to wait for a rebuild to publish new content
-- Unsplash integration setup for easy media management
-- [Sanity AI Assist preconfigured for image alt text generation](https://www.sanity.io/docs/ai-assist?utm_source=github.com&utm_medium=organic_social&utm_campaign=ai-assist&utm_content=)
-- Out of the box support for [Vercel Visual Editing](https://www.sanity.io/blog/visual-editing-sanity-vercel?utm_source=github.com&utm_medium=referral&utm_campaign=may-vercel-launch).
+### 🎨 Frontend & Design
+- **Dark/Light/System theme** toggle using `next-themes` with smooth transitions
+- **Responsive design** with Tailwind CSS v4 and Inter font from Google Fonts
+- **Paginated post listing** with "See More" progressive loading
+- **Hero post layout** with cover image, author avatar, date, and excerpt
+- **Typography** powered by `@tailwindcss/typography` and `shadcn-prose` with full dark mode support
+- **shadcn/ui components** (Button, Dropdown Menu) for polished, accessible UI elements
 
-## Demo
+### ⚡ Performance & SEO
+- **Static generation** with Incremental Static Revalidation (ISR) — no rebuild delays for new content
+- **Vercel Speed Insights** integrated for performance monitoring
+- **Dynamic Open Graph metadata** per post with cover image support
+- **Structured SEO metadata** generation from Sanity settings (title, description, author, OG images)
+- **Next.js Turbopack** enabled for fast local development
 
-### [https://next-blog.sanity.build](https://next-blog.sanity.build)
+## 🏗️ Architecture
 
-## Deploy your own
-
-Use the Deploy Button below, you'll deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example) as well as connect it to your Sanity dataset using [the Sanity Vercel Integration][integration].
-
-[![Deploy with Vercel](https://vercel.com/button)][vercel-deploy]
-
-## How to use
-
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [npm](https://docs.npmjs.com/cli/init), [Yarn](https://yarnpkg.com/lang/en/docs/cli/create/), or [pnpm](https://pnpm.io) to bootstrap the example:
-
-```bash
-npx create-next-app --example cms-sanity next-sanity-blog
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   Next.js 15    │────▶│   Sanity CMS    │◀────│  Convex Backend │
+│   (Frontend)    │     │ (Content Lake)  │     │  (Serverless)   │
+│                 │     │                 │     │                 │
+│  • App Router   │     │  • Posts        │     │  • Cron Jobs    │
+│  • SSG + ISR    │     │  • Authors      │     │  • Actions      │
+│  • Draft Mode   │     │  • Settings     │     │  • Queries      │
+│  • Sanity Studio│     │  • Images       │     │  • Scheduler    │
+└─────────────────┘     └─────────────────┘     └────────┬────────┘
+                                                         │
+                                                         ▼
+                                                ┌─────────────────┐
+                                                │  Google Gemini  │
+                                                │     (AI)        │
+                                                │                 │
+                                                │  • Content Gen  │
+                                                │  • Image Gen    │
+                                                │  • Grounding    │
+                                                │  • Extraction   │
+                                                └─────────────────┘
 ```
 
-```bash
-yarn create next-app --example cms-sanity next-sanity-blog
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Framework** | [Next.js 15](https://nextjs.org/) (App Router, Turbopack) |
+| **Language** | [TypeScript](https://www.typescriptlang.org/) 5.6 |
+| **CMS** | [Sanity](https://www.sanity.io/) v3 (Content Lake, Studio, Presentation Tool) |
+| **Backend** | [Convex](https://www.convex.dev/) (Serverless functions, cron jobs, database) |
+| **AI** | [Google Gemini](https://ai.google.dev/) (`@google/genai`) — 2.5 Flash + Image Gen |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/), `shadcn-prose` |
+| **Theming** | [next-themes](https://github.com/pacocoursey/next-themes) |
+| **Validation** | [Zod v4](https://zod.dev/) |
+| **Testing** | [Vitest](https://vitest.dev/), [convex-test](https://docs.convex.dev/testing) |
+| **Deployment** | [Vercel](https://vercel.com/) |
+| **Package Manager** | [Yarn 4](https://yarnpkg.com/) (Berry) |
+
+## 📁 Project Structure
+
+```
+personal-blog/
+├── app/
+│   ├── (blog)/                  # Blog route group
+│   │   ├── layout.tsx           # Root blog layout (theme, footer, draft mode)
+│   │   ├── page.tsx             # Home page (hero post + more stories)
+│   │   ├── posts/
+│   │   │   ├── page.tsx         # Paginated "All Stories" listing
+│   │   │   └── [slug]/          # Individual post pages
+│   │   └── actions.ts           # Server actions (draft mode toggle)
+│   ├── (sanity)/                # Sanity Studio route group
+│   │   └── studio/              # Embedded Sanity Studio at /studio
+│   ├── api/
+│   │   └── draft-mode/          # Draft mode API routes
+│   ├── globals.css              # Global styles, CSS variables, dark mode
+│   └── icon.tsx                 # Dynamic favicon generation
+│
+├── components/
+│   ├── alert-banner.tsx         # Draft mode notification banner
+│   ├── article.tsx              # Post card component
+│   ├── avatar.tsx               # Author avatar
+│   ├── cover-image.tsx          # Post cover image with Sanity CDN
+│   ├── date.tsx                 # Date formatting component
+│   ├── footer.tsx               # Site footer with Portable Text
+│   ├── mode-toggle.tsx          # Dark/Light/System theme switcher
+│   ├── more-stories.tsx         # Additional posts grid
+│   ├── onboarding.tsx           # First-run onboarding guide
+│   ├── paginated-stories.tsx    # Paginated post listing with "See More"
+│   ├── portable-text.tsx        # Portable Text renderer
+│   ├── providers/
+│   │   ├── convex-client-provider.tsx
+│   │   └── theme-provider.tsx
+│   └── ui/                      # shadcn/ui primitives (Button, Dropdown)
+│
+├── config/
+│   └── metadata.config.ts       # Dynamic SEO metadata generation
+│
+├── convex/                      # Convex backend
+│   ├── _config/
+│   │   └── env.config.ts        # Environment variable exports
+│   ├── _constants/
+│   │   └── prompts.ts           # AI system prompts & response schemas
+│   ├── _lib/
+│   │   ├── google.genai.ts      # Gemini AI integration (content, images, extraction)
+│   │   ├── sanity.ts            # Sanity write client (create/update posts)
+│   │   └── sanity.test.ts       # Sanity integration tests
+│   ├── actions.ts               # Convex actions (generate article, upload, etc.)
+│   ├── crons.ts                 # Daily article generation cron job
+│   ├── jobs.ts                  # Job orchestration (topic lookup → scheduled generation)
+│   ├── queries.ts               # Convex queries (get today's topics)
+│   └── schema.ts                # Convex database schema (topics table)
+│
+├── sanity/
+│   ├── lib/
+│   │   ├── api.ts               # Sanity project config (projectId, dataset, etc.)
+│   │   ├── client.ts            # Sanity client instance
+│   │   ├── demo.ts              # Demo/fallback content
+│   │   ├── fetch.ts             # Sanity fetch wrapper with caching
+│   │   ├── queries.ts           # GROQ queries (hero, posts, pagination, etc.)
+│   │   ├── token.ts             # Read token access
+│   │   └── utils.ts             # URL resolvers, OG image helpers
+│   ├── plugins/
+│   │   ├── assist.ts            # AI Assist plugin with preset prompts
+│   │   └── settings.tsx         # Singleton document structure plugin
+│   └── schemas/
+│       ├── documents/
+│       │   ├── author.ts        # Author document schema
+│       │   └── post.ts          # Post document schema (with sources field)
+│       └── singletons/
+│           └── settings.tsx     # Site-wide settings singleton
+│
+├── sanity.config.ts             # Sanity Studio configuration
+├── tailwind.config.ts           # Tailwind CSS v4 configuration
+├── next.config.ts               # Next.js configuration
+├── vitest.config.mts            # Vitest test configuration
+└── package.json
 ```
 
-```bash
-pnpm create next-app --example cms-sanity next-sanity-blog
-```
+## 🚀 Getting Started
 
-Whenever you edit a GROQ query you update the TypeScript types by running:
+### Prerequisites
 
-```bash
-npm run typegen
-```
+- **Node.js** ≥ 18
+- **Yarn** 4 (Berry) — managed via `corepack`
+- A [Sanity](https://www.sanity.io/) account and project
+- A [Convex](https://www.convex.dev/) account and project
+- A [Google AI Studio](https://aistudio.google.com/) API key
 
-# Configuration
-
-- [Step 1. Set up the environment](#step-1-set-up-the-environment)
-  - [Reuse remote environment variables](#reuse-remote-environment-variables)
-  - [Using the Sanity CLI](#using-the-sanity-cli)
-    - [Creating a read token](#creating-a-read-token)
-- [Step 2. Run Next.js locally in development mode](#step-2-run-nextjs-locally-in-development-mode)
-- [Step 3. Populate content](#step-3-populate-content)
-- [Step 4. Deploy to production](#step-4-deploy-to-production)
-- [Next steps](#next-steps)
-
-## Step 1. Set up the environment
-
-### Reuse remote environment variables
-
-If you started with [deploying your own](#deploy-your-own) then you can run this to reuse the environment variables from the Vercel project and skip to the next step:
+### 1. Clone the Repository
 
 ```bash
-npx vercel link
-npx vercel env pull
+git clone git@github.com:agnivon/personal-blog.git
+cd personal-blog
 ```
 
-### Using the Sanity CLI
-
-Copy the `.env.local.example` file to `.env.local` to get started:
+### 2. Install Dependencies
 
 ```bash
-cp -i .env.local.example .env.local
+corepack enable
+yarn install
 ```
 
-Run the setup command to get setup with a Sanity project, dataset and their relevant environment variables:
+### 3. Set Up Environment Variables
+
+Copy the example environment file:
 
 ```bash
-npm run setup
+cp .env.local.example .env.local
 ```
+
+Fill in all the required values in `.env.local`:
+
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_SANITY_PROJECT_ID` | Your Sanity project ID |
+| `NEXT_PUBLIC_SANITY_DATASET` | Sanity dataset name (e.g., `production`) |
+| `SANITY_API_READ_TOKEN` | Sanity API token with **Viewer** permissions |
+| `SANITY_API_DEVELOPER_TOKEN` | Sanity API token with **Editor/Admin** permissions (for Convex write operations) |
+| `SANITY_BLOG_AUTHOR_ID` | Sanity document `_id` of the default blog author |
+| `CONVEX_DEPLOYMENT` | Your Convex deployment identifier |
+| `NEXT_PUBLIC_CONVEX_URL` | Your Convex deployment URL |
+| `GEMINI_API_KEY` | Google AI Studio API key |
+| `TIMEZONE` | Timezone for date operations (default: `Asia/Kolkata`) |
+| `DATE_FORMAT_STRING` | Date format string (default: `dd/MM/yyyy`) |
+| `CONVEX_ENV` | `development` or `production` (controls cron activation) |
+
+#### Creating Sanity Tokens
+
+1. Go to [manage.sanity.io](https://manage.sanity.io/) and select your project.
+2. Navigate to the **🔌 API** tab.
+3. Click **+ Add API token**.
+4. Create a **Viewer** token for `SANITY_API_READ_TOKEN` (used for live preview).
+5. Create a **Developer/Editor** token for `SANITY_API_DEVELOPER_TOKEN` (used by Convex to create posts).
+
+### 4. Initialize Sanity (First-time Setup Only)
+
+If you're setting up a brand new Sanity project:
 
 ```bash
 yarn setup
 ```
 
-```bash
-pnpm run setup
-```
+> **Note**: When asked *"Would you like to add configuration files for a Sanity project in this Next.js folder?"*, answer **No** — the configuration files are already included.
 
-You'll be asked multiple questions, here's a sample output of what you can expect:
+### 5. Run the Development Server
 
 ```bash
-Need to install the following packages:
-sanity@3.30.1
-Ok to proceed? (y) y
-You're setting up a new project!
-We'll make sure you have an account with Sanity.io.
-Press ctrl + C at any time to quit.
-
-Prefer web interfaces to terminals?
-You can also set up best practice Sanity projects with
-your favorite frontends on https://www.sanity.io/templates
-
-Looks like you already have a Sanity-account. Sweet!
-
-✔ Fetching existing projects
-? Select project to use Templates [r0z1eifg]
-? Select dataset to use blog-vercel
-? Would you like to add configuration files for a Sanity project in this Next.js folder? No
-
-Detected framework Next.js, using prefix 'NEXT_PUBLIC_'
-Found existing NEXT_PUBLIC_SANITY_PROJECT_ID, replacing value.
-Found existing NEXT_PUBLIC_SANITY_DATASET, replacing value.
+yarn dev
 ```
 
-It's important that when you're asked `Would you like to add configuration files for a Sanity project in this Next.js folder?` that you answer `No` as this example is already setup with the required configuration files.
+This concurrently starts:
+- **Next.js** (with Turbopack) at [http://localhost:3000](http://localhost:3000)
+- **Convex dev server** syncing functions to your development deployment
 
-#### Creating a read token
+Access Sanity Studio at [http://localhost:3000/studio](http://localhost:3000/studio).
 
-This far your `.env.local` file should have values for `NEXT_PUBLIC_SANITY_PROJECT_ID` and `NEXT_PUBLIC_SANITY_DATASET`.
-Before you can run the project you need to setup a read token (`SANITY_API_READ_TOKEN`), it's used for authentication when Sanity Studio is live previewing your application.
+## 📖 Usage
 
-1. Go to [manage.sanity.io](https://manage.sanity.io/) and select your project.
-2. Click on the `🔌 API` tab.
-3. Click on `+ Add API token`.
-4. Name it "next blog live preview read token" and set `Permissions` to `Viewer` and hit `Save`.
-5. Copy the token and add it to your `.env.local` file.
+### Manual Content Authoring
+
+1. Open Sanity Studio at `/studio`
+2. Click **+ Create** → **Post**
+3. Fill in the title, generate a slug, write content, add a cover image, and select an author
+4. Click **Publish** to make the post live
+
+### AI-Powered Auto-Publishing
+
+1. Open your [Convex Dashboard](https://dashboard.convex.dev/)
+2. Navigate to the **Data** tab and open the `topics` table
+3. Add a document with:
+   - `topic` — the subject for the article (e.g., *"The Future of WebAssembly"*)
+   - `instructions` — (optional) custom instructions for the AI
+   - `generationDate` — the date to generate in `dd/MM/yyyy` format
+4. The daily cron job (at 05:30 UTC / 11:00 AM IST) will:
+   - Query topics scheduled for today
+   - Generate article content using Gemini with Google Search grounding
+   - Extract the title and excerpt
+   - Generate a cover image
+   - Upload the complete post to Sanity
+
+> **Note**: The cron job only runs when `CONVEX_ENV=production`. In development, you can manually trigger article generation via the Convex dashboard.
+
+### Draft Mode
+
+- In development, content is shown immediately
+- In production, new content uses **Time-based Revalidation** (up to ~60 seconds delay)
+- Toggle draft mode at `/api/draft-mode/enable` or via the Vercel Toolbar
+
+## 🧪 Testing
+
+Run the test suite with [Vitest](https://vitest.dev/):
 
 ```bash
-SANITY_API_READ_TOKEN="<paste your token here>"
+# Run tests in watch mode
+yarn test
+
+# Run tests once
+yarn test:once
+
+# Run tests with coverage
+yarn test:coverage
+
+# Debug tests
+yarn test:debug
 ```
 
-Your `.env.local` file should look something like this:
+## 📜 Available Scripts
 
-```bash
-NEXT_PUBLIC_SANITY_PROJECT_ID="r0z1eifg"
-NEXT_PUBLIC_SANITY_DATASET="blog-vercel"
-SANITY_API_READ_TOKEN="sk..."
-```
+| Script | Description |
+|---|---|
+| `yarn dev` | Start Next.js + Convex dev servers concurrently |
+| `yarn next-dev` | Start only the Next.js dev server (with Turbopack) |
+| `yarn convex-dev` | Start only the Convex dev server |
+| `yarn build` | Build the Next.js production bundle |
+| `yarn start` | Start the Next.js production server |
+| `yarn lint` | Run ESLint |
+| `yarn typegen` | Extract Sanity schema & generate TypeScript types |
+| `yarn setup` | Initialize Sanity project configuration |
+| `yarn test` | Run Vitest in watch mode |
+| `yarn test:once` | Run tests once |
+| `yarn test:coverage` | Run tests with coverage report |
+| `yarn convex-deploy` | Deploy Convex functions to production |
 
-> [!CAUTION]  
-> Make sure to add `.env.local` to your `.gitignore` file so you don't accidentally commit it to your repository.
+## 🚢 Deployment
 
-## Step 2. Run Next.js locally in development mode
+### Vercel (Recommended)
 
-```bash
-npm install && npm run dev
-```
+1. Push your code to GitHub
+2. [Import the project on Vercel](https://vercel.com/new)
+3. Add all environment variables from `.env.local` to the Vercel project settings
+4. Deploy
 
-```bash
-yarn install && yarn dev
-```
-
-```bash
-pnpm install && pnpm dev
-```
-
-Your blog should be up and running on [http://localhost:3000](http://localhost:3000)! If it doesn't work, post on [GitHub discussions](https://github.com/vercel/next.js/discussions).
-
-## Step 3. Populate content
-
-Open your Sanity Studio that should be running on [http://localhost:3000/studio](http://localhost:3000/studio).
-
-By default you're taken to the [Presentation tool][presentation], which has a preview of the blog on the left hand side, and a list of documents on the right hand side.
-
-<details>
-<summary>View screenshot ✨</summary>
-
-![screenshot](https://github.com/vercel/next.js/assets/81981/07cbc580-4a03-4837-9aa4-90b632c95630)
-
-</details>
-
-We're all set to do some content creation!
-
-- Click on the **"+ Create"** button top left and select **Post**
-- Type some dummy data for the **Title**
-- **Generate** a **Slug**
-  <details>
-  <summary>Now that you have a slug you should see the post show up in the preview on the left hand side ✨</summary>
-
-  ![screenshot](https://github.com/vercel/next.js/assets/81981/05b74848-6ae4-442b-8995-0b7e2180aa74)
-
-  </details>
-
-- Fill in **Content** with some dummy text
-  <details>
-  <summary>Or generate it with AI Assist ✨</summary>
-
-  If you've enabled [AI Assist][enable-ai-assist] you click on the sparkles ✨ button and generate a draft based on your title and then on **Generate sample content**.
-
-  ![screenshot](https://github.com/vercel/next.js/assets/81981/2276d8ad-5b55-447c-befe-d53249f091e1)
-
-  </details>
-
-- Summarize the **Content** in the **Excerpt** field
-  <details>
-  <summary>Or have AI Assist summarize it for you ✨</summary>
-
-  If you've enabled [AI Assist][enable-ai-assist] you click on the sparkles ✨ button and then on **Generate sample content**.
-
-  ![screenshot](https://github.com/vercel/next.js/assets/81981/d24b9b37-cd88-4519-8094-f4c956102450)
-
-  </details>
-
-- Select a **Cover Image** from [Unsplash].
-  <details>
-  <summary>Unsplash is available in the **Select** dropdown ✨</summary>
-
-  ![screenshot](https://github.com/vercel/next.js/assets/81981/204d004d-9396-434e-8795-a8b68a2ed89b)
-
-  </details>
-  <details>
-  <summary>Click the "Crop image" button to adjust hotspots and cropping ✨</summary>
-
-  ![screenshot](https://github.com/vercel/next.js/assets/81981/e905fc6e-5bab-46a7-baec-7cb08747772c)
-
-  </details>
-  <details>
-  <summary>You can preview the results live on the left side, and additional formats on the right side ✨</summary>
-
-  ![screenshot](https://github.com/vercel/next.js/assets/81981/6c59eef0-d2d9-4d77-928a-98e99df4b1df)
-
-  </details>
-
-- Customize the blog name, description and more.
-  <details>
-  <summary>Click "Structure" at the top center, then on "Settings" on the left hand side ✨</summary>
-
-  ![screenshot](https://github.com/vercel/next.js/assets/81981/14f48d83-af81-4589-900e-a7a598cc608a)
-
-  </details>
-  <details>
-  <summary>Once you have a "Settings" document, you can customize it inside "Presentation" ✨</summary>
-
-  ![screenshot](https://github.com/vercel/next.js/assets/81981/e3473f7b-5e7e-46ab-8d43-cae54a4b929b)
-
-  </details>
-
-> [!IMPORTANT]  
-> For each post record, you need to click **Publish** after saving for it to be visible outside Draft Mode. In production new content is using [Time-based Revalidation](https://nextjs.org/docs/app/building-your-application/data-fetching/fetching-caching-and-revalidating#time-based-revalidation), which means it may take up to 1 minute before changes show up. Since a stale-while-revalidate pattern is used you may need to refresh a couple of times to see the changes.
-
-## Step 4. Deploy to production
-
-> [!NOTE]  
-> If you already [deployed with Vercel earlier](#deploy-your-own) you can skip this step.
-
-To deploy your local project to Vercel, push it to [GitHub](https://docs.github.com/en/get-started/importing-your-projects-to-github/importing-source-code-to-github/adding-locally-hosted-code-to-github)/GitLab/Bitbucket and [import to Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example).
-
-> [!IMPORTANT]  
-> When you import your project on Vercel, make sure to click on **Environment Variables** and set them to match your `.env.local` file.
-
-After it's deployed link your local code to the Vercel project:
+After deployment, link your local project:
 
 ```bash
 npx vercel link
 ```
 
-> [!TIP]
-> In production you can exit Draft Mode by clicking on _"Back to published"_ at the top. On [Preview deployments](https://vercel.com/docs/deployments/preview-deployments) you can [toggle Draft Mode in the Vercel Toolbar](https://vercel.com/docs/workflow-collaboration/draft-mode#enabling-draft-mode-in-the-vercel-toolbar).
+### Convex
 
-## Next steps
+Deploy your Convex functions to production:
 
-- [Join the Sanity community](https://slack.sanity.io/)
+```bash
+yarn convex-deploy
+```
 
-## Related examples
+Make sure `CONVEX_ENV` is set to `production` on your Convex deployment for the daily cron job to activate.
 
-- [AgilityCMS](/examples/cms-agilitycms)
-- [Builder.io](/examples/cms-builder-io)
-- [ButterCMS](/examples/cms-buttercms)
-- [Contentful](/examples/cms-contentful)
-- [Cosmic](/examples/cms-cosmic)
-- [DatoCMS](/examples/cms-datocms)
-- [DotCMS](/examples/cms-dotcms)
-- [Drupal](/examples/cms-drupal)
-- [Enterspeed](/examples/cms-enterspeed)
-- [Ghost](/examples/cms-ghost)
-- [GraphCMS](/examples/cms-graphcms)
-- [Kontent.ai](/examples/cms-kontent-ai)
-- [MakeSwift](/examples/cms-makeswift)
-- [Payload](/examples/cms-payload)
-- [Plasmic](/examples/cms-plasmic)
-- [Prepr](/examples/cms-prepr)
-- [Prismic](/examples/cms-prismic)
-- [Sanity](/examples/cms-sanity)
-- [Sitecore XM Cloud](/examples/cms-sitecore-xmcloud)
-- [Sitefinity](/examples/cms-sitefinity)
-- [Storyblok](/examples/cms-storyblok)
-- [TakeShape](/examples/cms-takeshape)
-- [Tina](/examples/cms-tina)
-- [Umbraco](/examples/cms-umbraco)
-- [Umbraco heartcore](/examples/cms-umbraco-heartcore)
-- [Webiny](/examples/cms-webiny)
-- [WordPress](/examples/cms-wordpress)
-- [Blog Starter](/examples/blog-starter)
+## 📄 License
 
-[vercel-deploy]: https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fcms-sanity&repository-name=cms-sanity&project-name=cms-sanity&demo-title=Blog%20using%20Next.js%20%26%20Sanity&demo-description=Real-time%20updates%2C%20seamless%20editing%2C%20no%20rebuild%20delays.&demo-url=https%3A%2F%2Fnext-blog.sanity.build%2F&demo-image=https%3A%2F%2Fgithub.com%2Fsanity-io%2Fnext-sanity%2Fassets%2F81981%2Fb81296a9-1f53-4eec-8948-3cb51aca1259&integration-ids=oac_hb2LITYajhRQ0i4QznmKH7gx
-[integration]: https://www.sanity.io/docs/vercel-integration
-[`.env.local.example`]: .env.local.example
-[unsplash]: https://unsplash.com
-[sanity-homepage]: https://www.sanity.io?utm_source=github.com&utm_medium=referral&utm_campaign=nextjs-v3vercelstarter
-[presentation]: https://www.sanity.io/docs/presentation
-[enable-ai-assist]: https://www.sanity.io/plugins/ai-assist#enabling-the-ai-assist-api
+This project is for personal use. Please refer to the repository for licensing details.
