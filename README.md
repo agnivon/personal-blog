@@ -328,4 +328,4 @@ Make sure `CONVEX_ENV` is set to `production` on your Convex deployment for the 
 
 ## 📄 License
 
-This project is for personal use. Please refer to the repository for licensing details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
