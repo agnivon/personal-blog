@@ -348,6 +348,13 @@
         },
         "optional": true
       },
+      "hide": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "boolean"
+        },
+        "optional": true
+      },
       "sources": {
         "type": "objectAttribute",
         "value": {

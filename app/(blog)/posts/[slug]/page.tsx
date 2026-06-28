@@ -21,7 +21,7 @@ type Props = {
 };
 
 const postSlugs = defineQuery(
-  `*[_type == "post" && defined(slug.current)]{"slug": slug.current}`
+  `*[_type == "post" && defined(slug.current) && hide != true]{"slug": slug.current}`
 );
 
 export async function generateStaticParams() {

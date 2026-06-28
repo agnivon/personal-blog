@@ -14,14 +14,14 @@ const postFields = /* groq */ `
 `;
 
 export const heroQuery = defineQuery(`
-  *[_type == "post" && defined(slug.current)] | order(date desc, _updatedAt desc) [0] {
+  *[_type == "post" && defined(slug.current) && hide != true] | order(date desc, _updatedAt desc) [0] {
     content,
     ${postFields}
   }
 `);
 
 export const moreStoriesQuery = defineQuery(`
-  *[_type == "post" && _id != $skip && defined(slug.current)] | order(date desc, _updatedAt desc) [0...$limit] {
+  *[_type == "post" && _id != $skip && defined(slug.current) && hide != true] | order(date desc, _updatedAt desc) [0...$limit] {
     ${postFields}
   }
 `);
@@ -35,7 +35,7 @@ export const postByIdQuery = defineQuery(`
 `);
 
 export const postQuery = defineQuery(`
-  *[_type == "post" && slug.current == $slug] [0] {
+  *[_type == "post" && slug.current == $slug && hide != true] [0] {
     content,
     sources,
     ${postFields}
@@ -43,13 +43,13 @@ export const postQuery = defineQuery(`
 `);
 
 export const postsCreatedTodayQuery = defineQuery(`
-  *[_type == "post" && dateTime(date) >= dateTime(now()) - 24*60*60 && dateTime(date) < dateTime(now()) + 1] | order(date desc, _updatedAt desc) {
+  *[_type == "post" && dateTime(date) >= dateTime(now()) - 24*60*60 && dateTime(date) < dateTime(now()) + 1 && hide != true] | order(date desc, _updatedAt desc) {
     ${postFields}
   }
 `);
 
 export const paginatedPostsQuery = defineQuery(`
-  *[_type == "post" && defined(slug.current)] 
+  *[_type == "post" && defined(slug.current) && hide != true] 
     | order(date desc, _updatedAt desc) 
     [$offset...$end] {
       ${postFields}
@@ -57,5 +57,6 @@ export const paginatedPostsQuery = defineQuery(`
 `);
 
 export const totalPostCountQuery = defineQuery(`
-  count(*[_type == "post" && defined(slug.current)])
+  count(*[_type == "post" && defined(slug.current) && hide != true])
 `);
+

@@ -92,6 +92,12 @@ export default defineType({
       to: [{ type: authorType.name }],
     }),
     defineField({
+      name: "hide",
+      title: "Hide",
+      type: "boolean",
+      initialValue: false,
+    }),
+    defineField({
       name: "sources",
       title: "Sources",
       type: "array",
