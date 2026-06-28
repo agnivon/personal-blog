@@ -26,19 +26,22 @@ export default async function PaginatedStories({
   });
   return (
     <>
-      <div className="mb-32 grid grid-cols-1 gap-y-20 md:grid-cols-2 md:gap-x-16 md:gap-y-32 lg:gap-x-32">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-12">
         {paginatedPosts?.map((post) => {
           return <Article key={post._id} post={post} />;
         })}
       </div>
       {page < totalPages && (
-        <Link
-          href={`/posts?page=${page + 1}`}
-          className="mx-auto mb-6 border bg-foreground py-3 px-12 font-bold text-background transition-colors duration-200 hover:bg-background hover:text-foreground lg:px-8 flex w-fit"
-          scroll={false}
-        >
-          <ChevronDownIcon /> {`See More (${totalPosts - page * pageSize})`}
-        </Link>
+        <div className="flex justify-center mt-12 mb-16">
+          <Link
+            href={`/posts?page=${page + 1}`}
+            className="inline-flex items-center gap-2 px-6 py-3 border border-border/80 hover:border-foreground bg-card hover:bg-muted text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm cursor-pointer"
+            scroll={false}
+          >
+            <ChevronDownIcon className="w-4 h-4" />
+            See More ({totalPosts - page * pageSize})
+          </Link>
+        </div>
       )}
     </>
   );

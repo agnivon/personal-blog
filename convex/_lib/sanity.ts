@@ -11,8 +11,10 @@ import { JSDOM } from "jsdom";
 import { ArraySchemaType } from "sanity";
 import showdown from "showdown";
 
-// @ts-ignore
-globalThis.crypto = webcrypto;
+if (typeof globalThis.crypto === "undefined") {
+  // @ts-ignore
+  globalThis.crypto = webcrypto;
+}
 
 const client = createClient({
   projectId: projectId, // your Sanity project ID

@@ -3,37 +3,49 @@ import { settingsQuery } from "@/sanity/lib/queries";
 import React from "react";
 import PortableText from "./portable-text";
 import { PortableTextBlock } from "next-sanity";
+import * as demo from "@/sanity/lib/demo";
 
 const Footer = async () => {
   const data = await sanityFetch({ query: settingsQuery });
+  const title = data?.title || demo.title;
   const footer = data?.footer || [];
+
   return (
-    <footer className="bg-accent-1 border-accent-2 border-t">
-      <div className="container mx-auto px-5">
-        {footer.length > 0 ? (
-          <PortableText
-            className="prose-sm text-pretty bottom-0 w-full !max-w-none py-12 text-center md:py-20"
-            value={footer as PortableTextBlock[]}
-          />
-        ) : (
-          <div className="flex flex-col items-center py-28 lg:flex-row">
-            <h3 className="mb-10 text-center text-4xl font-bold leading-tight tracking-tighter lg:mb-0 lg:w-1/2 lg:pr-4 lg:text-left lg:text-5xl">
-              Built with Next.js.
-            </h3>
-            <div className="flex flex-col items-center justify-center lg:w-1/2 lg:flex-row lg:pl-4">
-              <a
-                href="https://nextjs.org/docs"
-                className="mx-3 mb-6 border bg-foreground py-3 px-12 font-bold text-background transition-colors duration-200 hover:bg-background hover:text-foreground lg:mb-0 lg:px-8"
-              >
-                Read Documentation
-              </a>
-              <a
-                href="https://github.com/vercel/next.js/tree/canary/examples/cms-sanity"
-                className="mx-3 font-bold hover:underline"
-              >
-                View on GitHub
-              </a>
-            </div>
+    <footer className="border-t border-border/40 bg-background/50 py-12 select-none">
+      <div className="container mx-auto px-5 max-w-6xl">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="text-center md:text-left">
+            <span className="font-serif text-lg font-bold tracking-tight">
+              {title}
+              <span className="text-blue-600 dark:text-blue-400">.</span>
+            </span>
+            <p className="text-xs text-muted-foreground mt-1 font-light">
+              &copy; {new Date().getFullYear()} Agnivo Neogi. All rights reserved.
+            </p>
+          </div>
+          
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-muted-foreground">
+            <a href="https://nextjs.org" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              Next.js 15
+            </a>
+            <a href="https://sanity.io" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              Sanity CMS
+            </a>
+            <a href="https://convex.dev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              Convex
+            </a>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              GitHub
+            </a>
+          </div>
+        </div>
+        
+        {footer.length > 0 && (
+          <div className="mt-8 border-t border-border/20 pt-8 flex justify-center w-full">
+            <PortableText
+              className="prose-xs text-pretty text-center prose-p:text-center text-muted-foreground max-w-none font-light mx-auto"
+              value={footer as PortableTextBlock[]}
+            />
           </div>
         )}
       </div>

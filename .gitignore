@@ -44,3 +44,5 @@ next-env.d.ts
 # Env files created by scripts for working locally
 .env
 .env.local
+# next-agents-md
+.next-docs/

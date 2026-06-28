@@ -1,8 +1,4 @@
 import PaginatedStories from "@/components/paginated-stories";
-import * as demo from "@/sanity/lib/demo";
-import { sanityFetch } from "@/sanity/lib/fetch";
-import { settingsQuery } from "@/sanity/lib/queries";
-import Link from "next/link";
 import { Suspense } from "react";
 
 export default async function Page({
@@ -11,20 +7,18 @@ export default async function Page({
   searchParams: Promise<{ page: string | undefined }>;
 }) {
   const page = parseInt((await searchParams).page || "1");
-  const settings = await sanityFetch({
-    query: settingsQuery,
-  });
   return (
-    <div className="container mx-auto px-5">
-      <h2 className="mb-16 mt-10 text-2xl font-bold leading-tight tracking-tight md:text-4xl md:tracking-tighter">
-        <Link href="/" className="hover:underline">
-          {settings?.title || demo.title}
-        </Link>
-      </h2>
-
-      <h2 className="mb-8 text-6xl font-bold leading-tight tracking-tighter md:text-7xl">
-        All Stories
-      </h2>
+    <div className="container mx-auto px-5 max-w-6xl">
+      <div className="mb-12 mt-6">
+        <span className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Archives</span>
+        <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mt-1">
+          All Stories
+        </h1>
+        <p className="text-muted-foreground text-sm md:text-base mt-2 font-light max-w-lg">
+          A curated collection of articles, news grounding, and AI insights.
+        </p>
+      </div>
+      
       <Suspense>
         <PaginatedStories page={page} />
       </Suspense>

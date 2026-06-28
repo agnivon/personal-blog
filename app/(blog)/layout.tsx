@@ -3,23 +3,29 @@ import "../globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { VisualEditing } from "next-sanity";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
 import { draftMode } from "next/headers";
 
 import AlertBanner from "../../components/alert-banner";
+import Header from "../../components/header";
 
 import { ConvexClientProvider } from "@/components/providers/convex-client-provider";
 import { generateSiteMetadata } from "@/config/metadata.config";
 import Footer from "../../components/footer";
-import { ModeToggle } from "@/components/mode-toggle";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 
 export async function generateMetadata(): Promise<Metadata> {
   return generateSiteMetadata();
 }
 
-const inter = Inter({
-  variable: "--font-inter",
+const sans = Plus_Jakarta_Sans({
+  variable: "--font-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const serif = Playfair_Display({
+  variable: "--font-serif",
   subsets: ["latin"],
   display: "swap",
 });
@@ -32,18 +38,14 @@ export default async function RootLayout({
   const { isEnabled: isDraftMode } = await draftMode();
 
   return (
-    <html lang="en" className={`${inter.variable}`} suppressHydrationWarning>
-      <body>
+    <html lang="en" className={`${sans.variable} ${serif.variable}`} suppressHydrationWarning>
+      <body className="flex min-h-screen flex-col font-sans antialiased">
         <ThemeProvider>
-          <div className="fixed bottom-5 right-5">
-            <ModeToggle />
-          </div>
           <ConvexClientProvider>
-            <section className="min-h-screen">
-              {isDraftMode && <AlertBanner />}
-              <main>{children}</main>
-              <Footer />
-            </section>
+            {isDraftMode && <AlertBanner />}
+            <Header />
+            <main className="flex-grow py-8 md:py-12">{children}</main>
+            <Footer />
             {isDraftMode && <VisualEditing />}
             <SpeedInsights />
           </ConvexClientProvider>
