@@ -4,6 +4,7 @@ import { Metadata, ResolvingMetadata } from "next";
 import * as demo from "@/sanity/lib/demo";
 import { resolveOpenGraphImage } from "@/sanity/lib/utils";
 import { toPlainText } from "next-sanity";
+import { getSiteUrl } from "@/lib/site";
 
 export async function generateSiteMetadata(): Promise<Metadata> {
   const settings = await sanityFetch({
@@ -15,14 +16,20 @@ export async function generateSiteMetadata(): Promise<Metadata> {
   const description = settings?.description || demo.description;
 
   const ogImage = resolveOpenGraphImage(settings?.ogImage);
-  let metadataBase: URL | undefined = undefined;
+  const siteUrl = getSiteUrl();
+
+  let metadataBase: URL;
   try {
-    metadataBase = settings?.ogImage?.metadataBase
-      ? new URL(settings.ogImage.metadataBase)
-      : undefined;
+    const configuredBase = settings?.ogImage?.metadataBase;
+    if (configuredBase && !configuredBase.includes("agnivon.com")) {
+      metadataBase = new URL(configuredBase);
+    } else {
+      metadataBase = new URL(siteUrl);
+    }
   } catch {
-    // ignore
+    metadataBase = new URL(siteUrl);
   }
+
   return {
     metadataBase,
     title: {
@@ -32,7 +39,7 @@ export async function generateSiteMetadata(): Promise<Metadata> {
     authors: [
       {
         name: "Agnivo Neogi",
-        url: "https://www.agnivon.com",
+        url: siteUrl,
       },
     ],
     creator: "Agnivo Neogi",
