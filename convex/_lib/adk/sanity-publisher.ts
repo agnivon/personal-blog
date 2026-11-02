@@ -3,7 +3,7 @@ import { createClient } from "@sanity/client";
 import { Schema } from "@sanity/schema";
 import { JSDOM } from "jsdom";
 import { ArraySchemaType } from "sanity";
-import showdown from "showdown";
+import { marked } from "marked";
 import { BlogGenerationResult, ResearchSource } from "./types";
 
 export function getSanityClient() {
@@ -27,12 +27,6 @@ export function getSanityClient() {
   });
 }
 
-const converter = new showdown.Converter({
-  tables: true,
-  strikethrough: true,
-  tasklists: true,
-  ghCodeBlocks: true,
-});
 
 const postSchema = Schema.compile({
   name: "myBlog",
@@ -63,7 +57,7 @@ export function markdownToPortableText(markdown: string) {
     throw new Error("Unable to resolve Sanity block content schema definition.");
   }
 
-  const html = converter.makeHtml(markdown);
+  const html = marked.parse(markdown) as string;
   const blocks = htmlToBlocks(html, blockContentType, {
     parseHtml: (h) => new JSDOM(h).window.document,
   });
