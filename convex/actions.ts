@@ -132,21 +132,45 @@ export const structureArticleContent = internalAction({
 });
 
 /**
- * Uploads a pre-constructed article to Sanity CMS.
+ * Directly creates a blog post in Sanity CMS with all supplied arguments.
+ * Rich text content is accepted in markdown format and converted to Portable Text blocks.
  */
 export const uploadArticle = internalAction({
   args: {
     title: v.string(),
-    excerpt: v.string(),
     content: v.string(),
-    image: v.object({
-      data: v.string(),
-      mimeType: v.string(),
-    }),
+    excerpt: v.optional(v.string()),
+    coverImage: v.optional(
+      v.union(
+        v.object({
+          data: v.string(),
+          mimeType: v.string(),
+        }),
+        v.object({
+          url: v.string(),
+        })
+      )
+    ),
+    slug: v.optional(v.string()),
+    date: v.optional(v.string()),
+    authorId: v.optional(v.string()),
+    sources: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          uri: v.string(),
+        })
+      )
+    ),
+    hide: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const result = await createPost(args);
-    return result;
+    return {
+      _id: result._id,
+      slug: result.slug,
+      title: result.title,
+    };
   },
 });
 

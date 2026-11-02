@@ -12,7 +12,7 @@ if (typeof globalThis.crypto === "undefined") {
   globalThis.crypto = webcrypto;
 }
 
-function getSanityClient() {
+export function getSanityClient() {
   const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
   const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
   const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2024-02-28";
@@ -77,35 +77,126 @@ export function markdownToPortableText(markdown: string) {
 }
 
 function getExtensionFromMimeType(mimeType: string): string {
+  const cleanMime = (mimeType || "").split(";")[0].trim().toLowerCase();
   const map: Record<string, string> = {
     "image/jpeg": "jpg",
+    "image/jpg": "jpg",
     "image/png": "png",
     "image/webp": "webp",
     "image/gif": "gif",
+    "image/svg+xml": "svg",
+    "image/bmp": "bmp",
+    "image/tiff": "tiff",
+    "image/heic": "heic",
+    "image/heif": "heif",
   };
-  return map[mimeType] || "png";
+  return map[cleanMime] || "png";
 }
 
+export type CoverImageInput =
+  | { data: string; mimeType: string }
+  | { url: string };
+
 export async function uploadCoverImageAsset(
-  image: CoverImageResult,
+  image: CoverImageInput,
   slug: string
 ): Promise<string | undefined> {
-  if (!image.data || !image.mimeType) return undefined;
+  const client = getSanityClient();
   try {
-    const client = getSanityClient();
-    const asset = await client.assets.upload(
-      "image",
-      Buffer.from(image.data, "base64"),
-      {
-        filename: `${slug}.${getExtensionFromMimeType(image.mimeType)}`,
-        contentType: image.mimeType,
+    if ("data" in image && image.data && image.mimeType) {
+      const ext = getExtensionFromMimeType(image.mimeType);
+      const asset = await client.assets.upload(
+        "image",
+        Buffer.from(image.data, "base64"),
+        {
+          filename: `${slug}.${ext}`,
+          contentType: image.mimeType.split(";")[0].trim(),
+        }
+      );
+      return asset._id;
+    }
+    if ("url" in image && image.url) {
+      const res = await fetch(image.url);
+      if (!res.ok) {
+        throw new Error(
+          `Failed to fetch cover image from URL (${res.status} ${res.statusText}): ${image.url}`
+        );
       }
-    );
-    return asset._id;
+      const rawContentType = res.headers.get("content-type") || "image/jpeg";
+      const contentType = rawContentType.split(";")[0].trim().toLowerCase();
+      const arrayBuffer = await res.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const ext = getExtensionFromMimeType(contentType);
+      const asset = await client.assets.upload("image", buffer, {
+        filename: `${slug}.${ext}`,
+        contentType,
+      });
+      return asset._id;
+    }
   } catch (err) {
     console.error("[Sanity Publisher] Failed to upload cover image asset:", err);
-    return undefined;
+    throw err;
   }
+  return undefined;
+}
+
+/**
+ * Strips markdown markup syntax from a string, returning clean plain text.
+ */
+export function stripMarkdown(markdown: string): string {
+  if (!markdown) return "";
+  return markdown
+    .replace(/!\[([^\]]*)\]\([^\)]*\)/g, "") // images
+    .replace(/\[([^\]]+)\]\([^\)]*\)/g, "$1") // links: keep text
+    .replace(/#{1,6}\s+/g, "") // headings
+    .replace(/(\*\*|__)(.*?)\1/g, "$2") // bold
+    .replace(/(\*|_)(.*?)\1/g, "$2") // italic
+    .replace(/~~(.*?)~~/g, "$1") // strikethrough
+    .replace(/`{1,3}[^`]*`{1,3}/g, (match) => match.replace(/`/g, "")) // inline code / code blocks
+    .replace(/^\s*>+\s?/gm, "") // blockquotes
+    .replace(/<[^>]+>/g, "") // html tags
+    .replace(/^[*-+]\s+/gm, "") // unordered list bullets
+    .replace(/^\d+\.\s+/gm, "") // ordered list numbers
+    .replace(/\n+/g, " ") // newlines to spaces
+    .replace(/\s+/g, " ") // collapse multiple spaces
+    .trim();
+}
+
+/**
+ * Extracts a concise plain-text excerpt from markdown content.
+ * Finds the first non-empty prose paragraph (skipping headings, dividers)
+ * and truncates cleanly at word boundaries.
+ */
+export function extractExcerptFromMarkdown(
+  content: string,
+  maxLength: number = 200
+): string {
+  if (!content) return "";
+  const paragraphs = content.split(/\n\s*\n/);
+  for (const para of paragraphs) {
+    const trimmed = para.trim();
+    if (
+      !trimmed ||
+      trimmed.startsWith("#") ||
+      trimmed.startsWith("---") ||
+      trimmed.startsWith("***") ||
+      trimmed.startsWith("___")
+    ) {
+      continue;
+    }
+    const plain = stripMarkdown(trimmed);
+    if (plain.length > 0) {
+      if (plain.length <= maxLength) {
+        return plain;
+      }
+      const truncated = plain.slice(0, maxLength);
+      const lastSpace = truncated.lastIndexOf(" ");
+      return (
+        (lastSpace > 0 ? truncated.slice(0, lastSpace) : truncated) + "..."
+      );
+    }
+  }
+  return "";
 }
 
 /**

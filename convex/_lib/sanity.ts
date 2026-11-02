@@ -1,24 +1,23 @@
 "use node";
 
-import { apiVersion, dataset, projectId } from "@/sanity/lib/api";
 import { postByIdQuery } from "@/sanity/lib/queries";
-import { Blob as GoogleGenAIBlob, GroundingChunk } from "@google/genai";
-import { createClient } from "@sanity/client";
 import { webcrypto } from "crypto";
-import { cleanSlug, markdownToPortableText } from "./adk/sanity-publisher";
+import {
+  cleanSlug,
+  CoverImageInput,
+  extractExcerptFromMarkdown,
+  extractSourcesFromMarkdown,
+  generateSanityKey,
+  getSanityClient,
+  markdownToPortableText,
+  stripMarkdown,
+  uploadCoverImageAsset,
+} from "./adk/sanity-publisher";
 
 if (typeof globalThis.crypto === "undefined") {
   // @ts-ignore
   globalThis.crypto = webcrypto;
 }
-
-const client = createClient({
-  projectId: projectId, // your Sanity project ID
-  dataset: dataset, // e.g. 'production'
-  token: process.env.SANITY_API_DEVELOPER_TOKEN, // token with write permissions
-  apiVersion: apiVersion,
-  useCdn: false, // disable CDN for writes
-});
 
 /**
  * Converts markdown string into Sanity Portable Text blocks.
@@ -28,109 +27,125 @@ export function createBlockContent(content: string) {
   return markdownToPortableText(content);
 }
 
-function getExtensionFromMimeType(mimeType: string): string | undefined {
-  const map: Record<string, string> = {
-    "image/jpeg": "jpg",
-    "image/png": "png",
-    "image/gif": "gif",
-    "image/webp": "webp",
-    "image/svg+xml": "svg",
-    "image/bmp": "bmp",
-    "image/tiff": "tiff",
-    "image/heic": "heic",
-    "image/heif": "heif",
-  };
-  return map[mimeType];
-}
-
-async function uploadImage({
-  image,
-  filename,
-}: {
-  image: GoogleGenAIBlob;
-  filename: string;
-}) {
-  if (image.data && image.mimeType) {
-    const asset = await client.assets.upload(
-      "image",
-      Buffer.from(image.data, "base64"),
-      {
-        filename: `${filename}.${getExtensionFromMimeType(image.mimeType)}`,
-        contentType: image.mimeType,
-      }
-    );
-
-    return asset._id; // Use this in coverImage.asset._ref
-  }
-}
-
-function getSlug(title: string): string {
-  return cleanSlug(title);
-}
-
-export async function createPost({
-  title,
-  excerpt,
-  content,
-  sources = [],
-  image,
-}: {
+export type CreatePostArgs = {
   title: string;
-  excerpt: string;
   content: string;
-  sources?: GroundingChunk[];
-  image: GoogleGenAIBlob;
-}) {
-  const slug = getSlug(title);
-  console.log("Article slug:", slug);
-  const imageAssetId = await uploadImage({ image, filename: slug });
-  console.log("Cover image asset ID:", imageAssetId);
-  const doc = {
-    // _id: `post-${nanoid()}`,
+  excerpt?: string;
+  coverImage?: CoverImageInput;
+  image?: CoverImageInput;
+  slug?: string;
+  date?: string;
+  authorId?: string;
+  sources?: { name: string; uri: string }[];
+  hide?: boolean;
+};
+
+/**
+ * Directly creates a blog post document in Sanity CMS.
+ * Supports markdown content, markdown-stripped excerpt, flexible cover images
+ * (base64 or URL), custom or auto-derived slug/sources/date, and hide state.
+ */
+export async function createPost(args: CreatePostArgs) {
+  const {
+    title,
+    content,
+    excerpt: rawExcerpt,
+    coverImage,
+    image,
+    slug: rawSlug,
+    date = new Date().toISOString(),
+    authorId = process.env.SANITY_BLOG_AUTHOR_ID,
+    sources,
+    hide = false,
+  } = args;
+
+  const resolvedImage = coverImage || image;
+  const slug = cleanSlug(rawSlug || title);
+  console.log("[Sanity] Creating post with slug:", slug);
+
+  let imageAssetId: string | undefined;
+  if (resolvedImage) {
+    imageAssetId = await uploadCoverImageAsset(resolvedImage, slug);
+    console.log("[Sanity] Cover image asset ID:", imageAssetId);
+  }
+
+  // Resolve excerpt: strip markdown if provided; otherwise extract first prose paragraph
+  const excerpt = rawExcerpt
+    ? stripMarkdown(rawExcerpt)
+    : extractExcerptFromMarkdown(content);
+
+  // Resolve sources: use explicit sources if provided; otherwise extract from markdown content
+  const resolvedSources =
+    sources !== undefined
+      ? sources
+      : extractSourcesFromMarkdown(content).map((s) => ({
+          name: s.title,
+          uri: s.uri,
+        }));
+
+  const doc: Record<string, unknown> = {
     _type: "post",
-    title: title,
+    title,
     slug: { _type: "slug", current: encodeURIComponent(slug) },
-    excerpt: excerpt,
-    content: createBlockContent(content),
-    date: new Date().toISOString(),
-    author: {
-      _type: "reference",
-      _ref: process.env.SANITY_BLOG_AUTHOR_ID, // ensure this author exists
-    },
-    sources: sources.map((e) => ({
-      _key: e.web?.uri,
-      name: e.web?.title,
-      uri: e.web?.uri,
+    excerpt,
+    content: markdownToPortableText(content),
+    date,
+    hide,
+    sources: resolvedSources.map((s, idx) => ({
+      _key: generateSanityKey(s.uri, idx),
+      name: s.name,
+      uri: s.uri,
     })),
-    coverImage: {
+  };
+
+  if (authorId) {
+    doc.author = {
+      _type: "reference",
+      _ref: authorId,
+    };
+  }
+
+  if (imageAssetId) {
+    doc.coverImage = {
       _type: "image",
       asset: { _type: "reference", _ref: imageAssetId },
-      alt: slug,
-    },
-  };
+      alt: title || slug,
+    };
+  }
 
-  return client.create(doc);
+  const client = getSanityClient();
+  const createdDoc = await client.create(doc as any);
+  console.info(`[Sanity] Successfully created post document with ID: ${createdDoc._id}`);
+
+  return {
+    _id: createdDoc._id,
+    slug,
+    title,
+  };
 }
 
 export function getPost(id: string) {
+  const client = getSanityClient();
   return client.fetch(postByIdQuery, { id });
 }
 
 export async function updatePostCoverImage(
   id: string,
   title: string,
-  image: GoogleGenAIBlob
+  image: CoverImageInput
 ) {
-  const slug = getSlug(title);
+  const slug = cleanSlug(title);
   console.log("Article slug:", slug);
-  const imageAssetId = await uploadImage({ image, filename: slug });
+  const imageAssetId = await uploadCoverImageAsset(image, slug);
   console.log("Cover image asset ID:", imageAssetId);
+  const client = getSanityClient();
   return client
     .patch(id)
     .set({
       coverImage: {
         _type: "image",
         asset: { _type: "reference", _ref: imageAssetId },
+        alt: title || slug,
       },
     })
     .commit();
