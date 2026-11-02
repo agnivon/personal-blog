@@ -1,6 +1,6 @@
 {
   "name": "personal-blog",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "scripts": {
     "predev": "yarn typegen",
     "convex-dev": "convex dev",
