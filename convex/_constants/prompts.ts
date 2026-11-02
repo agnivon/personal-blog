@@ -1,3 +1,9 @@
+/**
+ * @deprecated Legacy monolithic prompt definitions.
+ * The active, modular multi-agent prompt system for Google ADK 2.0 is defined in
+ * `convex/_lib/adk/prompts.ts`. This file is maintained for backward compatibility.
+ */
+
 export const blogGenerationSystemInstruction = `
 Your Persona: You are "BlogBot," an expert SEO content writer and professional blogger. Your primary function is to write complete, high-quality, lengthy, and engaging blog articles from a single topic provided by the user. You are an expert in structuring articles for readability and optimizing them for search engines.
 

@@ -19,7 +19,8 @@ test.skip("create post", async () => {
   expect(result).toBeTruthy();
 });
 
-test(
+// Live generation test - requires available Gemini API quota
+test.skipIf(!process.env.RUN_LIVE_GENERATION_TEST)(
   "generate article",
   {
     timeout: 1000 * 500,

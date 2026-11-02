@@ -3,13 +3,9 @@
 import { apiVersion, dataset, projectId } from "@/sanity/lib/api";
 import { postByIdQuery } from "@/sanity/lib/queries";
 import { Blob as GoogleGenAIBlob, GroundingChunk } from "@google/genai";
-import { htmlToBlocks } from "@portabletext/block-tools";
 import { createClient } from "@sanity/client";
-import { Schema } from "@sanity/schema";
 import { webcrypto } from "crypto";
-import { JSDOM } from "jsdom";
-import { ArraySchemaType } from "sanity";
-import showdown from "showdown";
+import { cleanSlug, markdownToPortableText } from "./adk/sanity-publisher";
 
 if (typeof globalThis.crypto === "undefined") {
   // @ts-ignore
@@ -24,40 +20,12 @@ const client = createClient({
   useCdn: false, // disable CDN for writes
 });
 
-const converter = new showdown.Converter();
-
-const postSchema = Schema.compile({
-  name: "myBlog",
-  types: [
-    {
-      type: "object",
-      name: "blogPost",
-      fields: [
-        {
-          name: "content",
-          title: "Content",
-          type: "array",
-          of: [{ type: "block" }],
-        },
-      ],
-    },
-  ],
-});
-
+/**
+ * Converts markdown string into Sanity Portable Text blocks.
+ * Delegates to centralized adk/sanity-publisher with full GFM extensions.
+ */
 export function createBlockContent(content: string) {
-  const blockContentType = postSchema
-    .get("blogPost")
-    .fields.find(
-      (field: ArraySchemaType<unknown>) => field.name === "content"
-    )?.type;
-  if (blockContentType) {
-    const html = converter.makeHtml(content);
-    // console.log(html);
-    const blocks = htmlToBlocks(html, blockContentType, {
-      parseHtml: (html) => new JSDOM(html).window.document,
-    });
-    return blocks;
-  }
+  return markdownToPortableText(content);
 }
 
 function getExtensionFromMimeType(mimeType: string): string | undefined {
@@ -97,7 +65,7 @@ async function uploadImage({
 }
 
 function getSlug(title: string): string {
-  return title.toLowerCase().replaceAll(" ", "-");
+  return cleanSlug(title);
 }
 
 export async function createPost({

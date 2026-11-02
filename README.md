@@ -4,13 +4,18 @@ An AI-powered, auto-publishing personal blog built with **Next.js 15**, **Sanity
 
 ## ✨ Features
 
-### 🤖 AI-Powered Content Generation
-- **Automated daily article publishing** via Convex cron jobs that trigger at a configurable schedule
-- **Topic-driven generation** — schedule topics in advance via the Convex dashboard with optional custom instructions
-- **Google Gemini 2.5 Flash** for article content generation with Google Search grounding for factual accuracy and inline source citations
-- **AI-generated cover images** using Gemini's image generation capabilities
-- **Automatic title & excerpt extraction** from generated content using structured JSON output
-- **Source attribution** — grounding chunks from Google Search are stored and displayed alongside each post
+### 🤖 AI-Powered Content Generation (Google ADK 2.0)
+- **Multi-Agent Orchestration with Google ADK 2.0**: Replaces brittle, monolithic single-shot prompts with a deterministic graph & dynamic workflow runtime (`@google/adk`).
+- **Arbitrary Length Generation**: Hierarchical decomposition into dynamically planned sections with rolling context bridges — reliably generates articles of any length (`brief` ~1.2k words, `standard` ~3k words, `deep_dive` ~6k words, or `monograph` ~15k-25k words).
+- **Specialized Multi-Agent Roles**:
+  - `Researcher Agent`: Conducts deep factual grounding with `GoogleSearchTool` to unearth verified statistics, counterarguments, and source citations.
+  - `Architect Agent`: Formulates the structured outline and allocates word budgets per section with strict Zod schemas.
+  - `Section Writer Agent`: Drafts deep, high-fidelity prose per section utilizing the previous section's concluding tail for seamless narrative transitions.
+  - `Editor Agent`: Unifies tone, eliminates cross-section redundancy, crafts the introductory hook, and synthesizes the conclusion.
+  - `SEO Specialist Agent`: Extracts high-CTR titles, URL-safe slugs, meta descriptions, keywords, and reading time.
+  - `Image Director Agent`: Synthesizes evocative visual metaphors without text for editorial cover art.
+- **Automated Daily Article Publishing**: Orchestrated via Convex cron jobs with full backward compatibility and fault isolation via ADK's `RetryConfig`.
+- **Standalone CLI Generator**: Local command-line tool (`scripts/test-adk-blog.ts`) supporting `--dry-run` and customizable length presets.
 
 ### 📝 Content Management
 - **Sanity Studio** embedded at `/studio` for a native, customizable authoring experience
@@ -68,7 +73,7 @@ An AI-powered, auto-publishing personal blog built with **Next.js 15**, **Sanity
 | **Language** | [TypeScript](https://www.typescriptlang.org/) 5.6 |
 | **CMS** | [Sanity](https://www.sanity.io/) v3 (Content Lake, Studio, Presentation Tool) |
 | **Backend** | [Convex](https://www.convex.dev/) (Serverless functions, cron jobs, database) |
-| **AI** | [Google Gemini](https://ai.google.dev/) (`@google/genai`) — 2.5 Flash + Image Gen |
+| **AI & Multi-Agent** | [Google ADK 2.0](https://adk.dev/) (`@google/adk`), [Google Gen AI](https://ai.google.dev/) (`@google/genai`) — Gemini 3.8 Flash + Gemini 2.5 Flash Image |
 | **Styling** | [Tailwind CSS v4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/), `shadcn-prose` |
 | **Theming** | [next-themes](https://github.com/pacocoursey/next-themes) |
 | **Validation** | [Zod v4](https://zod.dev/) |
@@ -119,9 +124,19 @@ personal-blog/
 │   ├── _config/
 │   │   └── env.config.ts        # Environment variable exports
 │   ├── _constants/
-│   │   └── prompts.ts           # AI system prompts & response schemas
+│   │   └── prompts.ts           # Legacy prompts & schemas
 │   ├── _lib/
-│   │   ├── google.genai.ts      # Gemini AI integration (content, images, extraction)
+│   │   ├── adk/                 # Google ADK 2.0 Multi-Agent Blog Generation Engine
+│   │   │   ├── models.ts        # Gemini model registry (defaults to gemini-3.8-flash & gemini-2.5-flash-image)
+│   │   │   ├── prompts.ts       # Centralized agent instructions and dynamic runtime prompt templates
+│   │   │   ├── types.ts         # Zod schemas, presets, and length budgets
+│   │   │   ├── agents.ts        # Specialized ADK LlmAgents with retry configurations
+│   │   │   ├── workflow.ts      # Deterministic graph & dynamic section drafting workflow
+│   │   │   ├── image.ts         # Cover image generation with Gemini native image model
+│   │   │   ├── sanity-publisher.ts # Portable Text conversion & Sanity CMS publishing
+│   │   │   ├── adk.test.ts      # Vitest test suite for ADK pipeline
+│   │   │   └── index.ts         # Public barrel export
+│   │   ├── google.genai.ts      # Legacy Gemini AI integration
 │   │   ├── sanity.ts            # Sanity write client (create/update posts)
 │   │   └── sanity.test.ts       # Sanity integration tests
 │   ├── actions.ts               # Convex actions (generate article, upload, etc.)
