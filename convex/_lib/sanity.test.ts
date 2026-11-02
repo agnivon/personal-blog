@@ -4,7 +4,7 @@ import { describe, expect, it, test } from "vitest";
 import {
   extractExcerptFromMarkdown,
   stripMarkdown,
-} from "./adk/sanity-publisher";
+} from "./adk/sanity_publisher";
 import { createBlockContent, createPost } from "./sanity";
 import { internal } from "../_generated/api";
 

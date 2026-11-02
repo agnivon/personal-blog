@@ -1,3 +1,5 @@
+"use node";
+
 import { GoogleSearchTool, LlmAgent, RetryConfig } from "@google/adk";
 import { DEFAULT_TASK_MODELS } from "./models";
 import {

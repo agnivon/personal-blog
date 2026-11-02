@@ -11,7 +11,7 @@ import {
   markdownToPortableText,
   stripMarkdown,
   uploadCoverImageAsset,
-} from "./adk/sanity-publisher";
+} from "./adk/sanity_publisher";
 
 /**
  * Converts markdown string into Sanity Portable Text blocks.

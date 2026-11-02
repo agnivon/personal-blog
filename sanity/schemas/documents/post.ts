@@ -44,7 +44,22 @@ export default defineType({
       name: "content",
       title: "Content",
       type: "array",
-      of: [{ type: "block" }],
+      of: [
+        {
+          type: "block",
+          marks: {
+            decorators: [
+              { title: "Strong", value: "strong" },
+              { title: "Emphasis", value: "em" },
+              { title: "Code", value: "code" },
+              { title: "Underline", value: "underline" },
+              { title: "Strike", value: "strike-through" },
+              { title: "Superscript", value: "sup" },
+              { title: "Subscript", value: "sub" },
+            ],
+          },
+        },
+      ],
     }),
     defineField({
       name: "excerpt",

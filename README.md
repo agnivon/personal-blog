@@ -150,7 +150,7 @@ personal-blog/
 │   │   │   ├── agents.ts        # Specialized ADK LlmAgents with retry configurations
 │   │   │   ├── workflow.ts      # Deterministic graph & dynamic section drafting workflow
 │   │   │   ├── image.ts         # Cover image generation with Gemini native image model
-│   │   │   ├── sanity-publisher.ts # GFM parsing (marked), Portable Text conversion & Sanity publishing
+│   │   │   ├── sanity_publisher.ts # GFM parsing (marked), Portable Text conversion & Sanity publishing
 │   │   │   ├── adk.test.ts      # Vitest test suite for ADK pipeline
 │   │   │   └── index.ts         # Public barrel export
 │   │   ├── google.genai.ts      # Legacy Gemini AI integration helpers

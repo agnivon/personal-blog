@@ -31,6 +31,16 @@ export default function CustomPortableText({
       ),
     },
     marks: {
+      sup: ({ children }) => (
+        <sup className="text-[0.7em] font-semibold text-blue-600 dark:text-blue-400 ml-0.5 leading-none align-super">
+          {children}
+        </sup>
+      ),
+      sub: ({ children }) => (
+        <sub className="text-[0.7em] font-semibold text-muted-foreground ml-0.5 leading-none align-sub">
+          {children}
+        </sub>
+      ),
       link: ({ children, value }) => {
         return (
           <a href={value?.href} rel="noreferrer noopener">

@@ -26,7 +26,7 @@ import {
   extractSourcesFromMarkdown,
   generateSanityKey,
   markdownToPortableText,
-} from "./sanity-publisher";
+} from "./sanity_publisher";
 import {
   ArticleBlueprintSchema,
   ArticleMetadataSchema,

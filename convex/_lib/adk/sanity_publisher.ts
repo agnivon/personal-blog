@@ -1,3 +1,5 @@
+"use node";
+
 import { htmlToBlocks } from "@portabletext/block-tools";
 import { createClient } from "@sanity/client";
 import { Schema } from "@sanity/schema";
@@ -39,7 +41,22 @@ const postSchema = Schema.compile({
           name: "content",
           title: "Content",
           type: "array",
-          of: [{ type: "block" }],
+          of: [
+            {
+              type: "block",
+              marks: {
+                decorators: [
+                  { title: "Strong", value: "strong" },
+                  { title: "Emphasis", value: "em" },
+                  { title: "Code", value: "code" },
+                  { title: "Underline", value: "underline" },
+                  { title: "Strike", value: "strike-through" },
+                  { title: "Superscript", value: "sup" },
+                  { title: "Subscript", value: "sub" },
+                ],
+              },
+            },
+          ],
         },
       ],
     },
@@ -60,6 +77,27 @@ export function markdownToPortableText(markdown: string) {
   const html = marked.parse(markdown) as string;
   const blocks = htmlToBlocks(html, blockContentType, {
     parseHtml: (h) => new JSDOM(h).window.document,
+    rules: [
+      {
+        deserialize(el, next) {
+          if (el.nodeName.toLowerCase() === "sup") {
+            return {
+              _type: "__decorator",
+              name: "sup",
+              children: next(el.childNodes),
+            };
+          }
+          if (el.nodeName.toLowerCase() === "sub") {
+            return {
+              _type: "__decorator",
+              name: "sub",
+              children: next(el.childNodes),
+            };
+          }
+          return undefined;
+        },
+      },
+    ],
   });
   return blocks;
 }

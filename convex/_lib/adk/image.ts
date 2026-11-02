@@ -1,3 +1,5 @@
+"use node";
+
 import { GenerateContentConfig, GoogleGenAI, Modality } from "@google/genai";
 import { GEMINI_MODELS } from "./models";
 import { buildCoverImagePrompt } from "./prompts";

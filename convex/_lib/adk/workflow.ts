@@ -1,3 +1,5 @@
+"use node";
+
 import { InMemoryRunner, NodeContext, Workflow } from "@google/adk";
 import {
   createArchitectAgent,
@@ -17,7 +19,7 @@ import {
   buildSectionWriterPrompt,
   buildSeoPrompt,
 } from "./prompts";
-import { extractSourcesFromMarkdown } from "./sanity-publisher";
+import { extractSourcesFromMarkdown } from "./sanity_publisher";
 import {
   ArticleBlueprint,
   ArticleBlueprintSchema,
