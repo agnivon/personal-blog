@@ -40,7 +40,7 @@ export default function AlertBanner() {
                   })
                 )
               }
-              className="hover:text-cyan underline transition-colors duration-200"
+              className="hover:text-blue-600 dark:hover:text-blue-400 underline transition-colors duration-200"
             >
               Back to published
             </button>

@@ -1,14 +1,18 @@
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 
 export default function DateComponent({
   dateString,
 }: {
   dateString: string | undefined;
 }) {
-  if (!dateString) return;
+  if (!dateString) return null;
+  const parsedDate = new Date(dateString);
+  if (!isValid(parsedDate)) {
+    return <time dateTime={dateString}>{dateString}</time>;
+  }
   return (
     <time dateTime={dateString}>
-      {format(new Date(dateString), "LLLL	d, yyyy")}
+      {format(parsedDate, "LLLL d, yyyy")}
     </time>
   );
 }

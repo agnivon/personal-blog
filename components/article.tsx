@@ -1,4 +1,4 @@
-import { Author, MoreStoriesQueryResult, Post } from "@/sanity.types";
+import { MoreStoriesQueryResult } from "@/sanity.types";
 import Link from "next/link";
 
 import Avatar from "./avatar";
@@ -6,9 +6,9 @@ import CoverImage from "./cover-image";
 import DateComponent from "./date";
 
 const Article = ({ post }: { post: MoreStoriesQueryResult[number] }) => {
-  const { _id, title, slug, coverImage, excerpt, author } = post;
+  const { title, slug, coverImage, excerpt, author } = post;
   return (
-    <article key={_id} className="group flex flex-col justify-between">
+    <article className="group flex flex-col justify-between">
       <div>
         <Link href={`/posts/${slug}`} className="block mb-4 overflow-hidden rounded-xl border border-border/40 bg-muted aspect-[16/10]">
           <div className="w-full h-full scale-100 group-hover:scale-[1.03] transition-transform duration-500 ease-out">

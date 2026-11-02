@@ -14,13 +14,14 @@ export const postDailyArticle = internalAction({
         if (todaysTopics.length > 0) {
           console.info(`Found ${todaysTopics.length} topics`);
           await Promise.all(
-            todaysTopics.map(async ({ topic }, idx) => {
+            todaysTopics.map(async ({ topic, instructions }, idx) => {
               console.log(`Scheduling ${topic}`);
               return ctx.scheduler.runAfter(
                 idx * 1000 * 60,
                 internal.actions.generateArticle,
                 {
-                  topic: topic,
+                  topic,
+                  instructions,
                 }
               );
             })

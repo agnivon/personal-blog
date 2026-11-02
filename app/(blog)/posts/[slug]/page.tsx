@@ -12,9 +12,8 @@ import PortableText from "@/components/portable-text";
 import ScrollProgressBar from "@/components/scroll-progress-bar";
 
 import { generatePostMetadata } from "@/config/metadata.config";
-import * as demo from "@/sanity/lib/demo";
 import { sanityFetch } from "@/sanity/lib/fetch";
-import { postQuery, settingsQuery } from "@/sanity/lib/queries";
+import { postQuery } from "@/sanity/lib/queries";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -40,10 +39,7 @@ export async function generateMetadata(
 }
 
 export default async function PostPage({ params }: Props) {
-  const [post, settings] = await Promise.all([
-    sanityFetch({ query: postQuery, params }),
-    sanityFetch({ query: settingsQuery }),
-  ]);
+  const post = await sanityFetch({ query: postQuery, params });
 
   if (!post?._id) {
     return notFound();
@@ -96,7 +92,7 @@ export default async function PostPage({ params }: Props) {
 
         {/* Content Body */}
         <div className="mx-auto max-w-2xl">
-          {post.content?.length && (
+          {Boolean(post.content?.length) && (
             <PortableText
               className="prose prose-zinc dark:prose-invert prose-lg max-w-none leading-relaxed prose-headings:font-serif prose-headings:font-bold prose-headings:tracking-tight prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline"
               value={post.content as PortableTextBlock[]}

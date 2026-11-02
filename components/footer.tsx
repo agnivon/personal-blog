@@ -26,7 +26,7 @@ const Footer = async () => {
           
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-muted-foreground">
             <a href="https://nextjs.org" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-              Next.js 15
+              Next.js
             </a>
             <a href="https://sanity.io" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
               Sanity CMS

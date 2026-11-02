@@ -21,7 +21,7 @@ export async function generateSiteMetadata(): Promise<Metadata> {
   let metadataBase: URL;
   try {
     const configuredBase = settings?.ogImage?.metadataBase;
-    if (configuredBase && !configuredBase.includes("agnivon.com")) {
+    if (configuredBase) {
       metadataBase = new URL(configuredBase);
     } else {
       metadataBase = new URL(siteUrl);

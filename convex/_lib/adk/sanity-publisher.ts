@@ -1,16 +1,10 @@
 import { htmlToBlocks } from "@portabletext/block-tools";
 import { createClient } from "@sanity/client";
 import { Schema } from "@sanity/schema";
-import { webcrypto } from "crypto";
 import { JSDOM } from "jsdom";
 import { ArraySchemaType } from "sanity";
 import showdown from "showdown";
-import { BlogGenerationResult, CoverImageResult, ResearchSource } from "./types";
-
-if (typeof globalThis.crypto === "undefined") {
-  // @ts-ignore
-  globalThis.crypto = webcrypto;
-}
+import { BlogGenerationResult, ResearchSource } from "./types";
 
 export function getSanityClient() {
   const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;

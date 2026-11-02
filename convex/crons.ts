@@ -4,16 +4,18 @@ import { CONVEX_ENV } from "./_config/env.config";
 
 const crons = cronJobs();
 
-crons.daily(
-  "post daily article",
-  {
-    hourUTC: 5,
-    minuteUTC: 30,
-  },
-  internal.jobs.postDailyArticle,
-  {
-    enabled: CONVEX_ENV === "production",
-  }
-);
+if (CONVEX_ENV === "production") {
+  crons.daily(
+    "post daily article",
+    {
+      hourUTC: 5,
+      minuteUTC: 30,
+    },
+    internal.jobs.postDailyArticle,
+    {
+      enabled: true,
+    }
+  );
+}
 
 export default crons;

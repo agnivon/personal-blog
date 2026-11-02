@@ -11,19 +11,19 @@ export default async function PaginatedStories({
   page?: number;
   pageSize?: number;
 }) {
-  const totalPosts = await sanityFetch({ query: totalPostCountQuery });
-  const totalPages = Math.ceil(totalPosts / pageSize);
-  if (page > totalPages) {
-    page = 1;
-  }
-  // const offset = (page - 1) * pageSize;
+  const safePage = Number.isInteger(page) && page > 0 ? page : 1;
+  const totalPosts = (await sanityFetch({ query: totalPostCountQuery })) ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalPosts / pageSize));
+  const currentPage = safePage > totalPages ? 1 : safePage;
+
   const paginatedPosts = await sanityFetch({
     query: paginatedPostsQuery,
     params: {
       offset: 0,
-      end: page * pageSize,
+      end: currentPage * pageSize,
     },
   });
+  const remainingPosts = Math.max(0, totalPosts - currentPage * pageSize);
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-12">
@@ -31,15 +31,15 @@ export default async function PaginatedStories({
           return <Article key={post._id} post={post} />;
         })}
       </div>
-      {page < totalPages && (
+      {currentPage < totalPages && remainingPosts > 0 && (
         <div className="flex justify-center mt-12 mb-16">
           <Link
-            href={`/posts?page=${page + 1}`}
+            href={`/posts?page=${currentPage + 1}`}
             className="inline-flex items-center gap-2 px-6 py-3 border border-border/80 hover:border-foreground bg-card hover:bg-muted text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm cursor-pointer"
             scroll={false}
           >
             <ChevronDownIcon className="w-4 h-4" />
-            See More ({totalPosts - page * pageSize})
+            See More ({remainingPosts})
           </Link>
         </div>
       )}

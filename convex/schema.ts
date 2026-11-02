@@ -6,5 +6,5 @@ export default defineSchema({
     topic: v.string(),
     instructions: v.optional(v.string()),
     generationDate: v.string(),
-  }),
+  }).index("by_generationDate", ["generationDate"]),
 });

@@ -1,6 +1,6 @@
 # 🖊️ Personal Blog
 
-An AI-powered, auto-publishing personal blog built with **Next.js 15**, **Sanity CMS**, **Convex**, and **Google Gemini**. The platform autonomously generates and publishes blog articles on a daily schedule — complete with AI-written content, cover images, source citations, and structured metadata — while also supporting traditional manual authoring through Sanity Studio.
+An AI-powered, auto-publishing personal blog built with **Next.js 16**, **Sanity CMS**, **Convex**, and **Google Gemini**. The platform autonomously generates and publishes blog articles on a daily schedule — complete with AI-written content, cover images, source citations, and structured metadata — while also supporting traditional manual authoring through Sanity Studio.
 
 ## ✨ Features
 
@@ -69,7 +69,7 @@ An AI-powered, auto-publishing personal blog built with **Next.js 15**, **Sanity
 
 | Layer | Technology |
 |---|---|
-| **Framework** | [Next.js 15](https://nextjs.org/) (App Router, Turbopack) |
+| **Framework** | [Next.js 16](https://nextjs.org/) (App Router, Turbopack) |
 | **Language** | [TypeScript](https://www.typescriptlang.org/) 5.6 |
 | **CMS** | [Sanity](https://www.sanity.io/) v3 (Content Lake, Studio, Presentation Tool) |
 | **Backend** | [Convex](https://www.convex.dev/) (Serverless functions, cron jobs, database) |

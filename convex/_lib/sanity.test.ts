@@ -1,4 +1,3 @@
-import { article } from "@/test_structured_article";
 import { convexTest } from "convex-test";
 import fs from "fs";
 import { describe, expect, it, test } from "vitest";
@@ -8,6 +7,12 @@ import {
 } from "./adk/sanity-publisher";
 import { createBlockContent, createPost } from "./sanity";
 import { internal } from "../_generated/api";
+
+const mockArticle = {
+  title: "Test Article Title",
+  excerpt: "Test excerpt summary.",
+  content: "## Introduction\n\nThis is a test article body.",
+};
 
 describe("Sanity Post Creation & Markdown Processing", () => {
   it("strips markdown formatting to plain text", () => {
@@ -57,7 +62,7 @@ test("create block content", async () => {
 });
 
 test.skip("create post", async () => {
-  const result = await createPost(article);
+  const result = await createPost(mockArticle);
   console.log(result);
   expect(result).toBeTruthy();
 });

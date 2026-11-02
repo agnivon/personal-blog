@@ -1,7 +1,6 @@
 "use node";
 
 import { postByIdQuery } from "@/sanity/lib/queries";
-import { webcrypto } from "crypto";
 import {
   cleanSlug,
   CoverImageInput,
@@ -13,11 +12,6 @@ import {
   stripMarkdown,
   uploadCoverImageAsset,
 } from "./adk/sanity-publisher";
-
-if (typeof globalThis.crypto === "undefined") {
-  // @ts-ignore
-  globalThis.crypto = webcrypto;
-}
 
 /**
  * Converts markdown string into Sanity Portable Text blocks.

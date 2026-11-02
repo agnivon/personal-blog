@@ -6,7 +6,9 @@ export default async function Page({
 }: {
   searchParams: Promise<{ page: string | undefined }>;
 }) {
-  const page = parseInt((await searchParams).page || "1");
+  const resolvedParams = await searchParams;
+  const parsedPage = parseInt(resolvedParams.page || "1", 10);
+  const page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
   return (
     <div className="container mx-auto px-5 max-w-6xl">
       <div className="mb-12 mt-6">

@@ -22,13 +22,13 @@ function Intro(props: { title: string | null | undefined; description: any }) {
     <section className="mt-8 mb-16 md:mb-24 grid grid-cols-1 gap-6 md:grid-cols-12 items-start">
       <div className="md:col-span-6">
         <h1 className="font-serif text-5xl md:text-7xl font-bold tracking-tight text-gradient leading-[1.1]">
-          {title || demo.title}
+          {title}
         </h1>
       </div>
       <div className="md:col-span-6 md:pl-6 text-muted-foreground text-base md:text-lg leading-relaxed font-light">
         <PortableText
           className="prose-base dark:prose-invert max-w-lg"
-          value={description?.length ? description : demo.description}
+          value={description}
         />
       </div>
     </section>
@@ -135,36 +135,6 @@ export default async function Page() {
           <Suspense>
             <MoreStories skip={heroPost._id} limit={10} />
           </Suspense>
-
-          {/* Newsletter Box */}
-          {/*
-          <div className="mt-24 p-8 md:p-12 rounded-3xl border border-border/40 bg-card/40 backdrop-blur-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-blue-600/10 dark:bg-blue-400/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="relative z-10 max-w-xl">
-              <span className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Newsletter</span>
-              <h3 className="font-serif text-3xl font-bold tracking-tight mt-2 mb-3">
-                Subscribe to stay updated
-              </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-6 font-light">
-                Join our newsletter to receive daily AI-generated insights, cover art releases, and web development deep-dives right in your inbox.
-              </p>
-              <form className="flex flex-col sm:flex-row gap-3">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email" 
-                  required
-                  className="flex-grow px-4 py-3 text-sm rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <button 
-                  type="submit" 
-                  className="px-6 py-3 text-sm font-semibold text-background bg-foreground hover:bg-foreground/90 rounded-xl transition-all duration-150 cursor-pointer shadow-md active:scale-95"
-                >
-                  Subscribe
-                </button>
-              </form>
-            </div>
-          </div>
-          */}
         </aside>
       )}
     </div>

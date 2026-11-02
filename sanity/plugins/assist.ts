@@ -104,7 +104,7 @@ export const assistWithPresets = () =>
                     children: [
                       {
                         marks: [],
-                        text: "- Include engaging and informative content such as personal anecdotes (for travel or fashion blogs), technical explanations or tutorials (for software engineering blogs), satirical or humorous observations (for shitposting), or well-argued positions (for political blogs).",
+                        text: "- Include engaging and informative content such as personal anecdotes (for travel or fashion blogs), technical explanations or tutorials (for software engineering blogs), or well-argued positions (for political or analytical blogs).",
                         _key: "c7468d106c91",
                         _type: "span",
                       },
@@ -113,26 +113,6 @@ export const assistWithPresets = () =>
                     style: "normal",
                     _key: "ce4acdb00da9",
                     markDefs: [],
-                  },
-                  {
-                    _type: "block",
-                    style: "normal",
-                    _key: "fb4572e65833",
-                    markDefs: [],
-                    children: [
-                      {
-                        _type: "span",
-                        marks: [],
-                        text: "- ",
-                        _key: "5358f261dce4",
-                      },
-                      {
-                        _type: "span",
-                        marks: [],
-                        text: " observations (for shitposting), or well-argued positions (for political blogs).",
-                        _key: "50792c6d0f77",
-                      },
-                    ],
                   },
                   {
                     children: [

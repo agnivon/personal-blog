@@ -27,14 +27,18 @@ export async function sanityFetch<const QueryString extends string>({
   stega?: boolean;
 }) {
   const perspective =
-    _perspective || (await draftMode()).isEnabled
-      ? "previewDrafts"
-      : "published";
+    _perspective ??
+    ((await draftMode()).isEnabled ? "previewDrafts" : "published");
   const stega =
     _stega ||
     perspective === "previewDrafts" ||
     process.env.VERCEL_ENV === "preview";
   if (perspective === "previewDrafts") {
+    if (!token) {
+      console.warn(
+        "[Sanity Fetch] Missing SANITY_API_READ_TOKEN for previewDrafts perspective"
+      );
+    }
     return client.fetch(query, await params, {
       stega,
       perspective: "previewDrafts",
