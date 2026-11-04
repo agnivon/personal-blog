@@ -1,8 +1,18 @@
 import { DocumentTextIcon } from "@sanity/icons";
 import { format, parseISO } from "date-fns";
-import { defineField, defineType } from "sanity";
+import React from "react";
+import { defineArrayMember, defineField, defineType } from "sanity";
 
 import authorType from "./author";
+
+const SuperscriptDecorator = (props: { children?: React.ReactNode }) =>
+  React.createElement("sup", null, props.children);
+const SubscriptDecorator = (props: { children?: React.ReactNode }) =>
+  React.createElement("sub", null, props.children);
+const SuperscriptIcon = () =>
+  React.createElement("span", null, "x²");
+const SubscriptIcon = () =>
+  React.createElement("span", null, "x₂");
 
 /**
  * This file is the schema definition for a post.
@@ -45,7 +55,7 @@ export default defineType({
       title: "Content",
       type: "array",
       of: [
-        {
+        defineArrayMember({
           type: "block",
           marks: {
             decorators: [
@@ -54,11 +64,21 @@ export default defineType({
               { title: "Code", value: "code" },
               { title: "Underline", value: "underline" },
               { title: "Strike", value: "strike-through" },
-              { title: "Superscript", value: "sup" },
-              { title: "Subscript", value: "sub" },
+              {
+                title: "Superscript",
+                value: "sup",
+                icon: SuperscriptIcon,
+                component: SuperscriptDecorator,
+              },
+              {
+                title: "Subscript",
+                value: "sub",
+                icon: SubscriptIcon,
+                component: SubscriptDecorator,
+              },
             ],
           },
-        },
+        }),
       ],
     }),
     defineField({
