@@ -1,6 +1,12 @@
 import "../globals.css";
 
 import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import {
+  metadata as studioMetadata,
+  viewport as studioViewport,
+} from "next-sanity/studio";
+import { getSiteUrl } from "@/lib/site";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -8,7 +14,12 @@ const inter = Inter({
   display: "swap",
 });
 
-export { metadata, viewport } from "next-sanity/studio";
+export const metadata: Metadata = {
+  ...studioMetadata,
+  metadataBase: new URL(getSiteUrl()),
+};
+
+export const viewport: Viewport = studioViewport;
 
 export default function RootLayout({
   children,

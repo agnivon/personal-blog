@@ -11,7 +11,15 @@ export default defineType({
       name: "name",
       title: "Name",
       type: "string",
+      initialValue: "Agnivo Neogi",
       validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: "url",
+      title: "Website",
+      type: "url",
+      initialValue: "https://agnivon.dev",
+      description: "Author's personal website URL (e.g. https://agnivon.dev)",
     }),
     defineField({
       name: "picture",

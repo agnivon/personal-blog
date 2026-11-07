@@ -3,6 +3,7 @@ import { ModeToggle } from "./mode-toggle";
 import { sanityFetch } from "@/sanity/lib/fetch";
 import { settingsQuery } from "@/sanity/lib/queries";
 import * as demo from "@/sanity/lib/demo";
+import { AUTHOR_SITE_URL } from "@/lib/site";
 
 export default async function Header() {
   const settings = await sanityFetch({ query: settingsQuery });
@@ -35,6 +36,16 @@ export default async function Header() {
             >
               Archive
             </Link>
+            <a
+              href={AUTHOR_SITE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-foreground after:transition-all hover:after:w-full inline-flex items-center gap-1"
+              title="Agnivo Neogi's personal website"
+            >
+              Author
+              <span className="text-[10px] text-muted-foreground">↗</span>
+            </a>
             
             <div className="h-4 w-[1px] bg-border/60" />
             

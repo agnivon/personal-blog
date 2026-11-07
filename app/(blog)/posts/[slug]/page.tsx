@@ -15,6 +15,7 @@ import ExpandableSources, { type SourceItem } from "@/components/expandable-sour
 import { generatePostMetadata } from "@/config/metadata.config";
 import { sanityFetch } from "@/sanity/lib/fetch";
 import { postQuery } from "@/sanity/lib/queries";
+import { JsonLd, generateArticleJsonLd } from "@/components/json-ld";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -48,6 +49,7 @@ export default async function PostPage({ params }: Props) {
 
   return (
     <div className="container mx-auto px-5 max-w-4xl">
+      <JsonLd data={generateArticleJsonLd(post)} />
       <ScrollProgressBar />
       
       {/* Back Navigation */}
@@ -77,7 +79,11 @@ export default async function PostPage({ params }: Props) {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-y border-border/40 py-5 gap-4">
             {post.author && (
               <div className="flex justify-center sm:justify-start">
-                <Avatar name={post.author.name} picture={post.author.picture} />
+                <Avatar
+                  name={post.author.name}
+                  picture={post.author.picture}
+                  url={post.author.url}
+                />
               </div>
             )}
             <div className="text-center sm:text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">

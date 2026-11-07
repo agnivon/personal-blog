@@ -12,6 +12,7 @@ import type { HeroQueryResult } from "@/sanity.types";
 import * as demo from "@/sanity/lib/demo";
 import { sanityFetch } from "@/sanity/lib/fetch";
 import { heroQuery, settingsQuery } from "@/sanity/lib/queries";
+import { JsonLd, generateWebsiteJsonLd } from "@/components/json-ld";
 
 function Intro(props: { title: string | null | undefined; description: any }) {
   const title = props.title || demo.title;
@@ -78,7 +79,13 @@ function HeroPost({
         )}
 
         <div className="flex items-center justify-between border-t border-border/40 pt-5">
-          {author && <Avatar name={author.name} picture={author.picture} />}
+          {author && (
+            <Avatar
+              name={author.name}
+              picture={author.picture}
+              url={author.url}
+            />
+          )}
           <Link 
             href={`/posts/${slug}`}
             className="inline-flex items-center gap-1.5 text-sm font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
@@ -102,6 +109,7 @@ export default async function Page() {
 
   return (
     <div className="container mx-auto px-5 max-w-6xl">
+      <JsonLd data={generateWebsiteJsonLd(settings?.title)} />
       <Intro title={settings?.title} description={settings?.description} />
       {heroPost ? (
         <HeroPost

@@ -34,7 +34,7 @@ const Article = ({ post }: { post: MoreStoriesQueryResult[number] }) => {
       </div>
 
       <div className="flex items-center justify-between border-t border-border/20 pt-4 mt-auto">
-        {author && <Avatar name={author.name} picture={author.picture} />}
+        {author && <Avatar name={author.name} picture={author.picture} url={author.url} />}
         <Link 
           href={`/posts/${slug}`}
           className="text-xs font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-0.5"

@@ -443,6 +443,13 @@
         },
         "optional": true
       },
+      "url": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
       "picture": {
         "type": "objectAttribute",
         "value": {

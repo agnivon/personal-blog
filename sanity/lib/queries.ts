@@ -4,13 +4,15 @@ export const settingsQuery = defineQuery(`*[_type == "settings"][0]`);
 
 const postFields = /* groq */ `
   _id,
+  _updatedAt,
+  hide,
   "status": select(_originalId in path("drafts.**") => "draft", "published"),
   "title": coalesce(title, "Untitled"),
   "slug": slug.current,
   excerpt,
   coverImage,
   "date": coalesce(date, _updatedAt),
-  "author": author->{"name": coalesce(name, "Anonymous"), picture},
+  "author": author->{"name": coalesce(name, "Agnivo Neogi"), "url": coalesce(url, "https://agnivon.dev"), picture},
 `;
 
 export const heroQuery = defineQuery(`
@@ -60,3 +62,20 @@ export const totalPostCountQuery = defineQuery(`
   count(*[_type == "post" && defined(slug.current) && hide != true])
 `);
 
+export const sitemapPostsQuery = defineQuery(`
+  *[_type == "post" && defined(slug.current) && hide != true] {
+    "slug": slug.current,
+    "date": coalesce(date, _updatedAt),
+    _updatedAt
+  }
+`);
+
+export const feedQuery = defineQuery(`
+  *[_type == "post" && defined(slug.current) && hide != true] | order(date desc, _updatedAt desc) [0...50] {
+    title,
+    "slug": slug.current,
+    excerpt,
+    "date": coalesce(date, _updatedAt),
+    "author": coalesce(author->name, "Agnivo Neogi")
+  }
+`);
