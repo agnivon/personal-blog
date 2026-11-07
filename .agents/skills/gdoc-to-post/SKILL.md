@@ -1,0 +1,156 @@
+---
+name: gdoc-to-post
+description: >-
+  Converts a Google Doc into a fully formatted, published Sanity blog post with
+  interactive citations, KaTeX mathematical equations, and expandable source lists.
+  Use when the user asks to create, import, or publish a blog post from a Google Doc
+  (or shares a docs.google.com URL / Google Doc ID).
+license: MIT
+metadata:
+  author: personal-blog
+  version: "1.0.0"
+---
+
+# Google Doc to Sanity Blog Post Runbook
+
+This skill outlines the complete end-to-end procedure for converting a Google Doc into a published, high-aesthetic blog post in this repository. It incorporates all repository-specific architectural rules, Sanity CMS schema conventions, KaTeX equation formatting, and source citation standards.
+
+---
+
+## Workflow Overview
+
+```
+Google Doc (via gdocs tool / API)
+  │
+  ├── 1. Ingest content & structure (headings, text runs, tables, Works Cited)
+  ├── 2. Map and assign 1-based citations (<sup>N</sup>) in body
+  ├── 3. Format and sanitize math equations for KaTeX ($$...$$ with blank lines, \$ escaped)
+  ├── 4. Convert Markdown to Portable Text with Sanity sup decorator marks
+  └── 5. Synchronize to Sanity (production & development), preserving existing coverImage
+```
+
+---
+
+## Step 1: Ingest Google Doc Content
+
+1. Use the `gdocs` skill / tool or Google Docs API with the document ID:
+   - Extract plain text, paragraphs, headings, bullet lists, and tables.
+2. **Table Conversion**:
+   - Dense multi-column tables in Google Docs rarely render well on mobile. Convert complex tables to structured bullet lists with bold keys or clean markdown tables.
+3. **Works Cited Isolation**:
+   - Locate the `"Works cited"` or `"References"` section at the end of the document.
+   - Separate the main body from the bibliography for independent processing.
+
+---
+
+## Step 2: Citation Extraction & In-Text Superscripts
+
+1. **Extract and Clean Sources**:
+   - For every entry in the bibliography:
+     - Extract URL (`https://...`).
+     - Extract title (text preceding URL or access timestamp).
+     - Strip access dates (e.g., `, accessed May 16, 2026,` or `accessed [Date]`).
+     - Remove leading list markers (`1. `, `- `, `* `).
+     - If title is missing or generic (`"link"`), fall back to the URL's hostname or path.
+2. **Assign 1-Based Citation Index**:
+   - Structure each source as `{ _key: "source-${num}", _type: "source", name: "${num}. ${title}", uri: url }`.
+   - Prefixing `${num}. ` enables readers to cross-reference superscript numbers in the text directly with cards in the Sources section.
+3. **In-Text Superscripts**:
+   - Format in-text references as HTML superscripts: `<sup>1</sup>`, `<sup>15, 16</sup>`.
+   - The repository's Sanity schema ([`sanity/schemas/documents/post.ts`](../../../sanity/schemas/documents/post.ts)) defines the `sup` decorator mark, and [`convex/_lib/adk/sanity_publisher.ts`](../../../convex/_lib/adk/sanity_publisher.ts) deserializes `<sup>` tags into Portable Text mark `sup`.
+   - Ensure every factual claim or cited assertion receives its exact corresponding superscript marker.
+
+---
+
+## Step 3: Math & Equation Formatting for KaTeX
+
+1. **Display Equations**:
+   - Enclose standalone formulas in `$$...$$` blocks.
+   - **MANDATORY**: Leave a blank line before and after `$$`. Never leave trailing spaces (`  \n`) on the line preceding `$$` (which causes Markdown parsers to treat `$$` as an inline line break inside the prior paragraph).
+2. **Escaping Currency Symbols**:
+   - **CRITICAL**: In LaTeX math mode, literal dollar signs MUST be escaped as `\$` (e.g., `\frac{\$100}{\frac{1}{100{,}000}} = \$10{,}000{,}000`).
+   - Raw `$` inside math mode causes a KaTeX parse error (`Can't use function '$' in math mode`), which renders the equation in **red error text**.
+   - Note: [`components/portable-text.tsx`](../../../components/portable-text.tsx) includes defensive auto-escaping `cleanMath.replace(/(?<!\\)\$/g, "\\$")`, but Markdown sources should always follow standard LaTeX escaping.
+3. **Inline Math**:
+   - Wrap inline variables or short formulas in `$ ... $` (e.g., `$c < br$`, `$I_t$`, `($2\text{ years} \times 0.5$)`).
+
+See [Math & KaTeX Guidelines](./references/math-and-katex.md) for detailed equation patterns.
+
+---
+
+## Step 4: Convert Markdown to Portable Text
+
+Use `markdownToPortableText` from [`convex/_lib/adk/sanity_publisher.ts`](../../../convex/_lib/adk/sanity_publisher.ts):
+
+```typescript
+import { markdownToPortableText } from "@/convex/_lib/adk/sanity_publisher";
+
+const blocks = markdownToPortableText(markdownContent);
+```
+
+- Converts markdown into valid Sanity Portable Text blocks.
+- Preserves `sup` decorator marks.
+- Preserves standalone `$$...$$` equation blocks for rendering via `DisplayMathCard`.
+
+---
+
+## Step 5: Sanity Dataset Synchronization & Asset Protection
+
+Always update **both** datasets to prevent environment divergence:
+1. `production`
+2. `development`
+
+```typescript
+import { getSanityClient } from "@/convex/_lib/adk/sanity_publisher";
+
+// Target datasets sequentially
+for (const dataset of ["production", "development"]) {
+  process.env.NEXT_PUBLIC_SANITY_DATASET = dataset;
+  const client = getSanityClient();
+
+  // 1. Fetch existing document to check cover image
+  const existing = await client.getDocument(postId);
+
+  // 2. CRITICAL: Preserve user-uploaded cover image
+  const existingCoverImage = existing?.coverImage;
+
+  // 3. Patch content and all sources without truncation
+  await client
+    .patch(postId)
+    .set({
+      content: blocks,
+      sources: allSources, // Do NOT slice or cap at 15
+    })
+    .commit();
+
+  // 4. Synchronize Studio draft if present
+  const draftId = `drafts.${postId}`;
+  const draftDoc = await client.getDocument(draftId);
+  if (draftDoc) {
+    await client
+      .patch(draftId)
+      .set({ content: blocks, sources: allSources })
+      .commit();
+  }
+}
+```
+
+### Critical Rules
+- **Cover Image Preservation**: Never set `coverImage: null` or overwrite an existing manual cover image uploaded through Sanity Studio. Always inspect and preserve `existing.coverImage`.
+- **Token**: Always use `SANITY_API_DEVELOPER_TOKEN` via `getSanityClient()`. `SANITY_API_WRITE_TOKEN` may lack write permissions on the `production` dataset.
+- **Uncapped Sources**: Store all $N$ parsed sources in `post.sources`. The frontend [`ExpandableSources`](../../../components/expandable-sources.tsx) component handles UI folding and search filtering automatically.
+
+---
+
+## Step 6: Verification & Git Hygiene
+
+1. **Verify Static Types & Tests**:
+   - `yarn tsc --noEmit` (must exit with 0 errors).
+   - `yarn test:once` (all tests must pass).
+2. **Verify Visual Rendering**:
+   - Check formula cards in light and dark mode (confirm no red error text).
+   - Confirm superscripts render small and raised (`text-[0.7em] leading-none align-super text-blue-600`).
+   - Confirm Sources & Grounding displays count pill, initial 10 cards, search filter, and expand/collapse toggle.
+3. **Scratch Files & Commit Standards**:
+   - Any temporary extraction, parsing, or inspection scripts MUST live in `<appDataDir>/brain/<conversation-id>/scratch/`. Never commit one-off scratch scripts to `scripts/` or the repo root.
+   - Commit messages must be repository-level (e.g. `feat(blog): ...`, `fix(portable-text): ...`), never mentioning specific article titles, citation counts, or one-off post metrics.
