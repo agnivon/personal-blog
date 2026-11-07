@@ -10,6 +10,7 @@ import DateComponent from "@/components/date";
 import MoreStories from "@/components/more-stories";
 import PortableText from "@/components/portable-text";
 import ScrollProgressBar from "@/components/scroll-progress-bar";
+import ExpandableSources, { type SourceItem } from "@/components/expandable-sources";
 
 import { generatePostMetadata } from "@/config/metadata.config";
 import { sanityFetch } from "@/sanity/lib/fetch";
@@ -101,26 +102,7 @@ export default async function PostPage({ params }: Props) {
 
           {/* Sources Section */}
           {post.sources && post.sources.length > 0 && (
-            <div className="mt-16 border-t border-border/40 pt-10">
-              <h3 className="font-serif text-2xl font-bold mb-6">Sources & Grounding</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {post.sources.map((src: any) => (
-                  <a 
-                    key={src._key} 
-                    href={src.uri} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="group flex items-center justify-between p-4 rounded-xl border border-border/40 bg-card/50 hover:bg-card hover:border-foreground/20 hover:shadow-sm transition-all"
-                  >
-                    <div className="flex flex-col min-w-0 pr-4">
-                      <span className="text-sm font-semibold group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">{src.name}</span>
-                      <span className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-[260px]">{src.uri}</span>
-                    </div>
-                    <span className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all text-sm shrink-0">↗</span>
-                  </a>
-                ))}
-              </div>
-            </div>
+            <ExpandableSources sources={post.sources as SourceItem[]} />
           )}
         </div>
       </article>

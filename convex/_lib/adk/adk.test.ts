@@ -258,6 +258,11 @@ describe("Slug & Portable Text Formatting", () => {
       title: "adk.dev",
       uri: "https://adk.dev",
     });
+
+    const limitedSources = extractSourcesFromMarkdown(markdown, 2);
+    expect(limitedSources.length).toBe(2);
+    expect(limitedSources[0].uri).toBe("https://nextjs.org/docs/app");
+    expect(limitedSources[1].uri).toBe("https://cloud.google.com/architecture");
   });
 
   it("converts sample markdown into Sanity Portable Text blocks", () => {
