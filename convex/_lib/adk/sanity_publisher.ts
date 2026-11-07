@@ -267,7 +267,10 @@ export function generateSanityKey(seed?: string, index?: number): string {
  * Extracts, validates, and deduplicates research sources from markdown texts
  * (dossiers, citations, or references sections).
  */
-export function extractSourcesFromMarkdown(markdown: string): ResearchSource[] {
+export function extractSourcesFromMarkdown(
+  markdown: string,
+  limit?: number
+): ResearchSource[] {
   if (!markdown) return [];
 
   const sources: ResearchSource[] = [];
@@ -324,7 +327,7 @@ export function extractSourcesFromMarkdown(markdown: string): ResearchSource[] {
     addSource("", match[1]);
   }
 
-  return sources.slice(0, 15);
+  return typeof limit === "number" ? sources.slice(0, limit) : sources;
 }
 
 /**

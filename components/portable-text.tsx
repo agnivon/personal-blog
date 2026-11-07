@@ -5,14 +5,119 @@
  * https://www.sanity.io/docs/block-content
  * https://github.com/portabletext/react-portabletext
  * https://portabletext.org/
- *
  */
 
+import React from "react";
+import katex from "katex";
 import {
   PortableText,
   type PortableTextComponents,
   type PortableTextBlock,
 } from "next-sanity";
+
+function DisplayMathCard({ math }: { math: string }) {
+  const cleanMath = math.replace(/^(\$\$|\\\[)|(\$\$|\\\])$/g, "").trim();
+  let html = "";
+  try {
+    html = katex.renderToString(cleanMath, {
+      displayMode: true,
+      throwOnError: false,
+    });
+  } catch {
+    html = cleanMath;
+  }
+
+  return (
+    <div className="my-8 not-prose flex flex-col items-center justify-center rounded-2xl border border-border/60 bg-card/60 p-6 text-card-foreground shadow-xs backdrop-blur-xs transition-colors hover:border-border">
+      <div
+        className="w-full overflow-x-auto text-center py-2 text-lg sm:text-xl [&_.katex]:text-lg sm:[&_.katex]:text-xl [&_.katex-display]:my-0"
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    </div>
+  );
+}
+
+const inlineMathRegex = /\$(?!\s)([^\$\n]+?)(?<!\s)\$|\\\(([\s\S]+?)\\\)/g;
+
+function renderMathString(text: string): React.ReactNode {
+  if (!text.includes("$") && !text.includes("\\(") && !text.includes("\\text{")) {
+    return text;
+  }
+
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  inlineMathRegex.lastIndex = 0;
+
+  while ((match = inlineMathRegex.exec(text)) !== null) {
+    const rawMatch = match[0];
+    const mathContent = (match[1] || match[2] || "").trim();
+
+    // Check if this looks like currency rather than math: e.g. "$100", "$3.5 million", "$250,000"
+    const isCurrency =
+      /^\d+(?:,\d+)*(?:\.\d+)?(?:\s*(?:million|billion|trillion|thousand))?$/i.test(
+        mathContent
+      );
+    const hasMathIndicators =
+      /[\\=<>_\^×±÷]|\b(times|frac|sum|text)\b/.test(mathContent);
+    const isMath =
+      !isCurrency &&
+      (hasMathIndicators || !/\b(to|and|or|in|is|of|for)\b/.test(mathContent));
+
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+
+    if (isMath) {
+      try {
+        const html = katex.renderToString(mathContent, {
+          displayMode: false,
+          throwOnError: false,
+        });
+        parts.push(
+          <span
+            key={`math-${match.index}`}
+            className="inline-block px-1 align-baseline text-foreground [&_.katex]:text-[1.05em]"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        );
+      } catch {
+        parts.push(rawMatch);
+      }
+    } else {
+      parts.push(rawMatch);
+    }
+
+    lastIndex = match.index + rawMatch.length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts.length === 1 ? parts[0] : parts;
+}
+
+function renderMathInNodes(children: React.ReactNode): React.ReactNode {
+  return React.Children.map(children, (child) => {
+    if (typeof child === "string") {
+      return renderMathString(child);
+    }
+    if (
+      React.isValidElement(child) &&
+      (child.props as { children?: React.ReactNode })?.children
+    ) {
+      return React.cloneElement(
+        child as React.ReactElement<{ children?: React.ReactNode }>,
+        undefined,
+        renderMathInNodes(
+          (child.props as { children?: React.ReactNode }).children
+        )
+      );
+    }
+    return child;
+  });
+}
 
 export default function CustomPortableText({
   className,
@@ -23,11 +128,40 @@ export default function CustomPortableText({
 }) {
   const components: PortableTextComponents = {
     block: {
+      normal: ({ children, value }) => {
+        const text =
+          value.children
+            ?.map((c) =>
+              "text" in c && typeof c.text === "string" ? c.text : ""
+            )
+            .join("")
+            .trim() || "";
+
+        const isDisplayMath =
+          (text.startsWith("$$") && text.endsWith("$$") && text.length > 4) ||
+          (text.startsWith("\\[") && text.endsWith("\\]")) ||
+          /^(?:\\text\{|HLV\s*=|Total Award\s*=|Hedonic Value\s*=|DALY\s*=)/.test(
+            text
+          );
+
+        if (isDisplayMath) {
+          return <DisplayMathCard math={text} />;
+        }
+
+        return (
+          <p className="mb-4 leading-relaxed">{renderMathInNodes(children)}</p>
+        );
+      },
       h5: ({ children }) => (
-        <h5 className="mb-2 text-sm font-semibold">{children}</h5>
+        <h5 className="mb-2 text-sm font-semibold">{renderMathInNodes(children)}</h5>
       ),
       h6: ({ children }) => (
-        <h6 className="mb-1 text-xs font-semibold">{children}</h6>
+        <h6 className="mb-1 text-xs font-semibold">{renderMathInNodes(children)}</h6>
+      ),
+      blockquote: ({ children }) => (
+        <blockquote className="border-l-4 border-primary/40 pl-4 my-4 italic text-muted-foreground">
+          {renderMathInNodes(children)}
+        </blockquote>
       ),
     },
     marks: {
