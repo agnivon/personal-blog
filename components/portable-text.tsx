@@ -17,9 +17,11 @@ import {
 
 function DisplayMathCard({ math }: { math: string }) {
   const cleanMath = math.replace(/^(\$\$|\\\[)|(\$\$|\\\])$/g, "").trim();
+  // In LaTeX math mode, literal currency $ must be escaped as \$
+  const sanitizedMath = cleanMath.replace(/(?<!\\)\$/g, "\\$");
   let html = "";
   try {
-    html = katex.renderToString(cleanMath, {
+    html = katex.renderToString(sanitizedMath, {
       displayMode: true,
       throwOnError: false,
     });
