@@ -22,7 +22,7 @@ function Intro(props: { title: string | null | undefined; description: any }) {
   return (
     <section className="mt-8 mb-16 md:mb-24 grid grid-cols-1 gap-6 md:grid-cols-12 items-start">
       <div className="md:col-span-6">
-        <h1 className="font-serif text-5xl md:text-7xl font-bold tracking-tight text-gradient leading-[1.1]">
+        <h1 className="font-serif text-5xl md:text-7xl font-bold tracking-tight text-gradient leading-tight pb-3 inline-block">
           {title}
         </h1>
       </div>

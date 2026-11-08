@@ -72,7 +72,7 @@ export default async function PostPage({ params }: Props) {
             <DateComponent dateString={post.date} />
           </div>
           
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mb-6 tracking-tight text-pretty">
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 tracking-tight text-pretty">
             {post.title}
           </h1>
 
