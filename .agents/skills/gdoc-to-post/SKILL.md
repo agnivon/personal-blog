@@ -13,7 +13,28 @@ metadata:
 
 # Google Doc to Sanity Blog Post Runbook
 
-This skill outlines the complete end-to-end procedure for converting a Google Doc into a published, high-aesthetic blog post in this repository. It incorporates all repository-specific architectural rules, Sanity CMS schema conventions, KaTeX equation formatting, and source citation standards.
+This skill defines the canonical publication standard and end-to-end procedure for converting Google Docs into published, high-aesthetic blog posts in this repository. All future posts created, imported, or updated MUST adhere strictly to the architecture, formatting rules, and non-negotiable mandates established below.
+
+---
+
+## Strict Mandates
+
+The following three rules are mandatory for every post created or updated using this skill. They must be followed without exception:
+
+1. **Line Breaks Must Be Preserved**:
+   - Google Docs paragraph boundaries must be preserved as distinct Portable Text blocks.
+   - In Markdown, paragraphs MUST be separated by a blank line (`\n\n`). Never output a single `\n` between paragraphs, or CommonMark parsers will collapse consecutive paragraphs into a single run-on block.
+   - Any block containing trapped newlines (`\n`) must be split into separate paragraph blocks so that each paragraph receives proper vertical spacing (`mb-4 leading-relaxed`) and editorial rhythm. Soft line breaks within paragraphs are rendered via `<br />`.
+
+2. **Tables Must Be Displayed As Is**:
+   - Tables from the Google Doc must be preserved and rendered **as is** as native Sanity `table` and `tableRow` objects.
+   - **NEVER** convert tables into bullet lists, summaries, or text approximations unless explicitly instructed otherwise by the user.
+   - Tables must retain all header rows, cell formatting, superscripts, subscripts, and inline formatting.
+
+3. **Works Cited Must Be Displayed As Is Unless Explicitly Instructed Otherwise**:
+   - The complete bibliography / Works Cited section must be preserved and displayed **as is** in the article content as a numbered list under `#### Works cited`.
+   - **NEVER** truncate, summarize, omit, or collapse the Works Cited section in the article body unless explicitly instructed otherwise by the user.
+   - In addition, all extracted sources must be stored uncapped in `post.sources` for the interactive `<ExpandableSources />` drawer.
 
 ---
 
@@ -35,8 +56,9 @@ Google Doc (via gdocs tool / API)
 
 1. Use the `gdocs` skill / tool or Google Docs API with the document ID:
    - Extract plain text, paragraphs, headings, bullet lists, and tables.
-2. **Table Conversion**:
-   - Dense multi-column tables in Google Docs rarely render well on mobile. Convert complex tables to structured bullet lists with bold keys or clean markdown tables.
+2. **Table Preservation (Mandatory As-Is)**:
+   - Extract tables from the Google Doc and format them as HTML/Markdown tables so they deserialize into native `table` and `tableRow` objects in Sanity.
+   - **MANDATORY**: Display tables **as is**. Never replace or convert tables into bullet lists, summaries, or text blocks unless explicitly instructed otherwise by the user. Ensure cell superscripts, subscripts, and formatting are preserved.
 3. **Works Cited Isolation**:
    - Locate the `"Works cited"` or `"References"` section at the end of the document.
    - Separate the main body from the bibliography for independent processing.
@@ -63,8 +85,9 @@ Google Doc (via gdocs tool / API)
    - Format in-text references as HTML superscripts: `<sup>1</sup>`, `<sup>15, 16</sup>`.
    - The repository's Sanity schema ([`sanity/schemas/documents/post.ts`](../../../sanity/schemas/documents/post.ts)) defines the `sup` decorator mark, and [`convex/_lib/adk/sanity_publisher.ts`](../../../convex/_lib/adk/sanity_publisher.ts) deserializes `<sup>` tags into Portable Text mark `sup`.
    - Ensure every factual claim or cited assertion receives its exact corresponding superscript marker.
-4. **Preserve Works Cited in Article Content**:
-   - Always preserve the bibliography at the bottom of the article body under `#### Works cited`.
+4. **Preserve Works Cited in Article Content (Mandatory As-Is Unless Explicitly Instructed Otherwise)**:
+   - Always preserve and display the complete bibliography at the bottom of the article body under `#### Works cited`.
+   - **MANDATORY**: Display Works Cited as is. Never omit, truncate, summarize, or collapse the bibliography in the article content unless the user explicitly instructs otherwise.
    - Format each entry as a 1-based numbered Markdown link (`1. [Title](url)`).
    - When parsed by `markdownToPortableText`, this produces ordered list blocks (`listItem: "number"`) with clickable link marks matching the in-text `<sup>` citation numbers, ensuring the bibliography is rendered in the post content as well as the interactive `<ExpandableSources />` component.
 
@@ -93,12 +116,16 @@ Use `markdownToPortableText` from [`convex/_lib/adk/sanity_publisher.ts`](../../
 ```typescript
 import { markdownToPortableText } from "@/convex/_lib/adk/sanity_publisher";
 
-const blocks = markdownToPortableText(markdownContent);
+const rawBlocks = markdownToPortableText(markdownContent);
+// Ensure line break integrity: split any blocks with trapped newlines into separate paragraph blocks
+const blocks = splitBlocksByNewlines(rawBlocks);
 ```
 
 - Converts markdown into valid Sanity Portable Text blocks.
-- Preserves `sup` decorator marks.
+- Preserves `sup` and `sub` decorator marks.
+- Preserves tables as native Sanity `table` and `tableRow` objects.
 - Preserves standalone `$$...$$` equation blocks for rendering via `DisplayMathCard`.
+- Enforces strict line break preservation by splitting any multi-paragraph blocks.
 
 ---
 

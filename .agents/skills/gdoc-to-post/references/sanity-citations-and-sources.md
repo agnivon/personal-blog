@@ -4,6 +4,25 @@ This guide details the schema requirements, citation numbering standards, Portab
 
 ---
 
+## Strict Mandates
+
+When generating, converting, or synchronizing blog posts, the following three mandates are strictly enforced:
+
+1. **Line Breaks Must Be Preserved**:
+   - Google Docs paragraph boundaries must be preserved as distinct Portable Text blocks.
+   - Any multi-paragraph block containing trapped newlines (`\n`) must be split into separate blocks. Soft line breaks within blocks are rendered as `<br />`.
+
+2. **Tables Must Be Displayed As Is**:
+   - Tables from the Google Doc must be preserved as native Sanity `table` and `tableRow` objects.
+   - Never replace or simplify tables into bullet lists unless explicitly instructed otherwise by the user.
+
+3. **Works Cited Must Be Displayed As Is Unless Explicitly Instructed Otherwise**:
+   - The bibliography / Works Cited section must be preserved and rendered **as is** in the article body under `#### Works cited`.
+   - Never omit, truncate, or summarize Works Cited in the article content unless explicitly instructed otherwise.
+   - All extracted sources must also be stored uncapped in `post.sources` for the `<ExpandableSources />` drawer.
+
+---
+
 ## 1. Sanity Schema Specification
 
 The post schema is defined in [`sanity/schemas/documents/post.ts`](../../../../sanity/schemas/documents/post.ts).

@@ -5,6 +5,15 @@
  * into a Sanity blog post with interactive citations, KaTeX display math,
  * and dual-dataset synchronization.
  *
+ * STRICT MANDATES:
+ * 1. Line breaks must be preserved: Google Doc paragraphs must remain separate blocks.
+ *    Any blocks containing trapped newlines are automatically split by splitBlocksByNewlines().
+ * 2. Tables must be displayed as is: Native Sanity table/tableRow objects are preserved
+ *    without being converted into bullet lists or summaries.
+ * 3. Works cited must be displayed as is unless explicitly instructed otherwise:
+ *    The complete numbered bibliography is rendered under "#### Works cited" in article content
+ *    and synchronized to post.sources.
+ *
  * Usage:
  *   npx jiti .agents/skills/gdoc-to-post/scripts/publish_gdoc_post.ts --input path/to/article.md [options]
  *
@@ -20,6 +29,7 @@
  *   --dry-run                    Optional: Parse and validate without committing to Sanity.
  */
 
+import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
@@ -373,6 +383,125 @@ export function getDatasetClient(dataset: string): SanityClient {
   });
 }
 
+interface SanitySpan {
+  _key: string;
+  _type: string;
+  text?: string;
+  marks?: string[];
+  [key: string]: unknown;
+}
+
+interface SanityBlock {
+  _key: string;
+  _type: string;
+  children?: SanitySpan[];
+  style?: string;
+  listItem?: string;
+  level?: number;
+  markDefs?: unknown[];
+  [key: string]: unknown;
+}
+
+/**
+ * Enforces strict line break preservation: splits any Portable Text block
+ * containing trapped newlines into distinct paragraph blocks so that each paragraph
+ * receives proper vertical spacing and editorial rhythm.
+ */
+export function splitBlocksByNewlines(blocks: unknown[]): unknown[] {
+  const result: unknown[] = [];
+
+  for (const rawBlock of blocks) {
+    if (!rawBlock || typeof rawBlock !== "object") {
+      result.push(rawBlock);
+      continue;
+    }
+
+    const block = rawBlock as SanityBlock;
+
+    if (block._type !== "block" || !Array.isArray(block.children)) {
+      result.push(block);
+      continue;
+    }
+
+    // Filter out completely empty blocks
+    const blockText = block.children.map((c) => c.text || "").join("").trim();
+    if (blockText.length === 0) {
+      continue;
+    }
+
+    const hasNewline = block.children.some(
+      (c) => typeof c.text === "string" && c.text.includes("\n")
+    );
+    if (!hasNewline) {
+      result.push(block);
+      continue;
+    }
+
+    // Preserve display math blocks intact
+    if (
+      (blockText.startsWith("$$") && blockText.endsWith("$$")) ||
+      (blockText.startsWith("\\[") && blockText.endsWith("\\]")) ||
+      /^(?:\\text\{|HLV\s*=|Total Award\s*=|Hedonic Value\s*=|DALY\s*=)/.test(blockText)
+    ) {
+      result.push(block);
+      continue;
+    }
+
+    let currentChildren: SanitySpan[] = [];
+
+    const finishParagraph = () => {
+      const validChildren = currentChildren.filter((c) => (c.text || "").length > 0);
+      const totalText = validChildren.map((c) => c.text || "").join("").trim();
+
+      if (totalText.length > 0) {
+        if (
+          validChildren.length > 0 &&
+          typeof validChildren[0].text === "string" &&
+          !validChildren[0].marks?.includes("sup")
+        ) {
+          validChildren[0] = {
+            ...validChildren[0],
+            text: validChildren[0].text.replace(/^\s+/, ""),
+          };
+        }
+        result.push({
+          ...block,
+          _key: randomBytes(6).toString("hex"),
+          children: validChildren,
+        });
+      }
+      currentChildren = [];
+    };
+
+    for (const child of block.children) {
+      const text = child.text;
+      if (typeof text !== "string" || !text.includes("\n")) {
+        currentChildren.push(child);
+        continue;
+      }
+
+      const parts = text.split("\n");
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        if (i > 0) {
+          finishParagraph();
+        }
+        if (part.length > 0) {
+          currentChildren.push({
+            ...child,
+            _key: randomBytes(6).toString("hex"),
+            text: part,
+          });
+        }
+      }
+    }
+
+    finishParagraph();
+  }
+
+  return result;
+}
+
 /**
  * Synchronizes the parsed blog post across target datasets.
  */
@@ -383,7 +512,8 @@ export async function syncPostToSanity(
   const postIds: Record<string, string> = {};
   const updatedDatasets: string[] = [];
 
-  const portableTextBlocks = markdownToPortableText(doc.bodyMarkdown);
+  const rawBlocks = markdownToPortableText(doc.bodyMarkdown);
+  const portableTextBlocks = splitBlocksByNewlines(rawBlocks);
 
   for (const dataset of options.datasets) {
     console.info(`\n[Sanity Sync] Connecting to dataset: '${dataset}'...`);

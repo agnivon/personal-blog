@@ -98,6 +98,13 @@ When working on Convex code, **always read `convex/_generated/ai/guidelines.md` 
 - **Portable Text Integrity**:
   - AI-generated Markdown and HTML must be converted into valid Portable Text blocks using `@portabletext/block-tools` (`htmlToBlocks`) and custom block deserializers in `convex/_lib/sanity.ts`.
   - On the frontend, always render Portable Text via the `<PortableText>` component (`components/portable-text.tsx`). Never inject raw, unsanitized HTML directly into the DOM.
+- **Strict Post Publishing Mandates (Canonical Publication Standard)**:
+  - When publishing or importing posts (e.g. via `.agents/skills/gdoc-to-post/`):
+    1. **Line Breaks Must Be Preserved**: Distinct paragraphs must remain separate Portable Text blocks (`style: "normal"`). Blocks with trapped newlines must be split with `splitBlocksByNewlines()`. Soft line breaks are rendered via `<br />`.
+    2. **Tables Must Be Displayed As Is**: Tables must be preserved and rendered as native Sanity `table` and `tableRow` objects. Never convert tables to bullet lists or summaries unless explicitly instructed otherwise.
+    3. **Works Cited Must Be Displayed As Is**: The full numbered bibliography must be rendered in the body under `#### Works cited` and synchronized uncapped to `post.sources`, unless explicitly instructed otherwise.
+    4. **Cover Image Preservation**: Never overwrite or delete existing cover art (`existing.coverImage`).
+    5. **KaTeX Currency Escaping**: In LaTeX math mode, all literal currency symbols must be escaped as `\$` to prevent KaTeX red error rendering.
 - **Next.js 16 Visual Editing & Draft Mode**:
   - Real-time preview is mounted via `presentationTool` with `defineDocuments` and `defineLocations`.
   - In `app/(blog)/posts/[slug]/page.tsx`, `generateStaticParams` must use `perspective: "published"` and `stega: false` to ensure clean, un-encoded slug strings during static export.

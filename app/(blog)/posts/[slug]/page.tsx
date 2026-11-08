@@ -98,7 +98,7 @@ export default async function PostPage({ params }: Props) {
         </div>
 
         {/* Content Body */}
-        <div className="mx-auto max-w-2xl">
+        <div className="mx-auto max-w-3xl">
           {Boolean(post.content?.length) && (
             <PortableText
               className="prose prose-zinc dark:prose-invert prose-lg max-w-none leading-relaxed prose-headings:font-serif prose-headings:font-bold prose-headings:tracking-tight prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline"

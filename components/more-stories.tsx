@@ -9,7 +9,7 @@ export default async function MoreStories(params: {
   const data = await sanityFetch({ query: moreStoriesQuery, params });
 
   return (
-    <div className="mb-32 grid grid-cols-1 gap-y-20 md:grid-cols-2 md:gap-x-16 md:gap-y-32 lg:gap-x-32">
+    <div className="mb-24 grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-x-8 md:gap-y-12 lg:gap-x-12">
       {data?.map((post) => {
         return <Article key={post._id} post={post} />;
       })}
