@@ -13,6 +13,18 @@
  */
 
 // Source: schema.json
+export type TableRow = {
+  _type: "tableRow";
+  cells?: Array<string>;
+};
+
+export type Table = {
+  _type: "table";
+  rows?: Array<{
+    _key: string;
+  } & TableRow>;
+};
+
 export type Post = {
   _id: string;
   _type: "post";
@@ -38,7 +50,9 @@ export type Post = {
     level?: number;
     _type: "block";
     _key: string;
-  }>;
+  } | {
+    _key: string;
+  } & Table>;
   excerpt?: string;
   coverImage?: {
     asset?: {
@@ -390,7 +404,7 @@ export type SanityAssetSourceData = {
   url?: string;
 };
 
-export type AllSanitySchemaTypes = Post | Author | Settings | SanityAssistInstructionTask | SanityAssistTaskStatus | SanityAssistSchemaTypeAnnotations | SanityAssistOutputType | SanityAssistOutputField | SanityAssistInstructionContext | AssistInstructionContext | SanityAssistInstructionUserInput | SanityAssistInstructionPrompt | SanityAssistInstructionFieldRef | SanityAssistInstruction | SanityAssistSchemaTypeField | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityImageAsset | SanityImageMetadata | Geopoint | Slug | SanityAssetSourceData;
+export type AllSanitySchemaTypes = TableRow | Table | Post | Author | Settings | SanityAssistInstructionTask | SanityAssistTaskStatus | SanityAssistSchemaTypeAnnotations | SanityAssistOutputType | SanityAssistOutputField | SanityAssistInstructionContext | AssistInstructionContext | SanityAssistInstructionUserInput | SanityAssistInstructionPrompt | SanityAssistInstructionFieldRef | SanityAssistInstruction | SanityAssistSchemaTypeField | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityImageAsset | SanityImageMetadata | Geopoint | Slug | SanityAssetSourceData;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: ./app/(blog)/posts/[slug]/page.tsx
 // Variable: postSlugs
@@ -464,6 +478,8 @@ export type SettingsQueryResult = {
 // Query: *[_type == "post" && defined(slug.current) && hide != true] | order(date desc, _updatedAt desc) [0] {    content,      _id,  _updatedAt,  hide,  "status": select(_originalId in path("drafts.**") => "draft", "published"),  "title": coalesce(title, "Untitled"),  "slug": slug.current,  excerpt,  coverImage,  "date": coalesce(date, _updatedAt),  "author": author->{"name": coalesce(name, "Agnivo Neogi"), "url": coalesce(url, "https://agnivon.dev"), picture},  }
 export type HeroQueryResult = {
   content: Array<{
+    _key: string;
+  } & Table | {
     children?: Array<{
       marks?: Array<string>;
       text?: string;
@@ -566,6 +582,8 @@ export type MoreStoriesQueryResult = Array<{
 // Query: *[_type == "post" && _id == $id][0] {    content,    sources,      _id,  _updatedAt,  hide,  "status": select(_originalId in path("drafts.**") => "draft", "published"),  "title": coalesce(title, "Untitled"),  "slug": slug.current,  excerpt,  coverImage,  "date": coalesce(date, _updatedAt),  "author": author->{"name": coalesce(name, "Agnivo Neogi"), "url": coalesce(url, "https://agnivon.dev"), picture},  }
 export type PostByIdQueryResult = {
   content: Array<{
+    _key: string;
+  } & Table | {
     children?: Array<{
       marks?: Array<string>;
       text?: string;
@@ -632,6 +650,8 @@ export type PostByIdQueryResult = {
 // Query: *[_type == "post" && slug.current == $slug && hide != true] [0] {    content,    sources,      _id,  _updatedAt,  hide,  "status": select(_originalId in path("drafts.**") => "draft", "published"),  "title": coalesce(title, "Untitled"),  "slug": slug.current,  excerpt,  coverImage,  "date": coalesce(date, _updatedAt),  "author": author->{"name": coalesce(name, "Agnivo Neogi"), "url": coalesce(url, "https://agnivon.dev"), picture},  }
 export type PostQueryResult = {
   content: Array<{
+    _key: string;
+  } & Table | {
     children?: Array<{
       marks?: Array<string>;
       text?: string;

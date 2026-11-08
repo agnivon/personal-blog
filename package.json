@@ -15,6 +15,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "type-check": "tsc --noEmit",
+    "prepare": "husky",
     "presetup": "echo 'about to setup env variables, follow the guide here: https://github.com/vercel/next.js/tree/canary/examples/cms-sanity#using-the-sanity-cli'",
     "setup": "npx sanity@latest init --env .env.local",
     "postsetup": "echo 'create the read token by following the rest of the guide: https://github.com/vercel/next.js/tree/canary/examples/cms-sanity#creating-a-read-token'",
@@ -65,16 +67,26 @@
   },
   "devDependencies": {
     "@edge-runtime/vm": "^5.0.0",
+    "@secretlint/secretlint-rule-pattern": "^13.1.0",
+    "@secretlint/secretlint-rule-preset-recommend": "^13.1.0",
     "@types/jsdom": "^21.1.7",
     "@types/katex": "^0.16.8",
     "concurrently": "^9.2.0",
     "convex-test": "^0.0.37",
     "eslint": "^9.13.0",
     "eslint-config-next": "16.4.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "secretlint": "^13.1.0",
     "tw-animate-css": "^1.3.5",
     "vite": "^7.3.7",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.1.12"
+  },
+  "lint-staged": {
+    "*": [
+      "secretlint --no-glob"
+    ]
   },
   "resolutions": {
     "@fastify/busboy": "^3.2.1",

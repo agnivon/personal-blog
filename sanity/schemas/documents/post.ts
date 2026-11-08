@@ -79,6 +79,9 @@ export default defineType({
             ],
           },
         }),
+        defineArrayMember({
+          type: "table",
+        }),
       ],
     }),
     defineField({

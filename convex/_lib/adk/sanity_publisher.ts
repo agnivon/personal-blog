@@ -35,6 +35,31 @@ const postSchema = Schema.compile({
   types: [
     {
       type: "object",
+      name: "table",
+      fields: [
+        {
+          name: "rows",
+          title: "Rows",
+          type: "array",
+          of: [
+            {
+              type: "object",
+              name: "tableRow",
+              fields: [
+                {
+                  name: "cells",
+                  title: "Cells",
+                  type: "array",
+                  of: [{ type: "string" }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "object",
       name: "blogPost",
       fields: [
         {
@@ -56,6 +81,9 @@ const postSchema = Schema.compile({
                 ],
               },
             },
+            {
+              type: "table",
+            },
           ],
         },
       ],
@@ -74,12 +102,12 @@ export function markdownToPortableText(markdown: string) {
     throw new Error("Unable to resolve Sanity block content schema definition.");
   }
 
-  const html = marked.parse(markdown) as string;
+  const html = marked.parse(markdown, { breaks: true, gfm: true }) as string;
   const blocks = htmlToBlocks(html, blockContentType, {
     parseHtml: (h) => new JSDOM(h).window.document,
     rules: [
       {
-        deserialize(el, next) {
+        deserialize(el, next, block) {
           if (el.nodeName.toLowerCase() === "sup") {
             return {
               _type: "__decorator",
@@ -93,6 +121,29 @@ export function markdownToPortableText(markdown: string) {
               name: "sub",
               children: next(el.childNodes),
             };
+          }
+          if (el.nodeType === 1 && el.nodeName.toLowerCase() === "table") {
+            const tableElement = el as Element;
+            const rows: { _key: string; _type: "tableRow"; cells: string[] }[] = [];
+            const trs = Array.from(tableElement.querySelectorAll("tr"));
+            trs.forEach((tr: Element, rIdx: number) => {
+              const cells: string[] = [];
+              const thsAndTds = Array.from(tr.querySelectorAll("th, td"));
+              thsAndTds.forEach((cell: Element) => {
+                cells.push(cell.innerHTML.trim());
+              });
+              if (cells.length > 0) {
+                rows.push({
+                  _key: `row-${rIdx}`,
+                  _type: "tableRow",
+                  cells,
+                });
+              }
+            });
+            return block({
+              _type: "table",
+              rows,
+            });
           }
           return undefined;
         },

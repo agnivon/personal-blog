@@ -40,6 +40,10 @@ Google Doc (via gdocs tool / API)
 3. **Works Cited Isolation**:
    - Locate the `"Works cited"` or `"References"` section at the end of the document.
    - Separate the main body from the bibliography for independent processing.
+4. **Paragraph Spacing & Line Break Preservation**:
+   - Google Docs models each paragraph as a distinct element (`NORMAL_TEXT`).
+   - In Markdown, paragraphs MUST be separated by a blank line (`\n\n`). Never output a single `\n` between paragraphs, or CommonMark parsers will collapse consecutive paragraphs into a single run-on block.
+   - Line breaks within blocks: `marked.parse` runs with `{ breaks: true, gfm: true }` and `CustomPortableText` renders `<br />` elements for line breaks within text spans.
 
 ---
 
@@ -59,6 +63,10 @@ Google Doc (via gdocs tool / API)
    - Format in-text references as HTML superscripts: `<sup>1</sup>`, `<sup>15, 16</sup>`.
    - The repository's Sanity schema ([`sanity/schemas/documents/post.ts`](../../../sanity/schemas/documents/post.ts)) defines the `sup` decorator mark, and [`convex/_lib/adk/sanity_publisher.ts`](../../../convex/_lib/adk/sanity_publisher.ts) deserializes `<sup>` tags into Portable Text mark `sup`.
    - Ensure every factual claim or cited assertion receives its exact corresponding superscript marker.
+4. **Preserve Works Cited in Article Content**:
+   - Always preserve the bibliography at the bottom of the article body under `#### Works cited`.
+   - Format each entry as a 1-based numbered Markdown link (`1. [Title](url)`).
+   - When parsed by `markdownToPortableText`, this produces ordered list blocks (`listItem: "number"`) with clickable link marks matching the in-text `<sup>` citation numbers, ensuring the bibliography is rendered in the post content as well as the interactive `<ExpandableSources />` component.
 
 ---
 

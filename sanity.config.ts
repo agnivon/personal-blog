@@ -20,6 +20,7 @@ import { pageStructure, singletonPlugin } from "@/sanity/plugins/settings";
 import settings from "@/sanity/schemas/singletons/settings";
 import author from "./sanity/schemas/documents/author";
 import post from "./sanity/schemas/documents/post";
+import { table, tableRow } from "./sanity/schemas/objects/table";
 
 const homeLocation = {
   title: "Home",
@@ -37,6 +38,9 @@ export default defineConfig({
       // Documents
       post,
       author,
+      // Objects
+      table,
+      tableRow,
     ],
   },
   plugins: [

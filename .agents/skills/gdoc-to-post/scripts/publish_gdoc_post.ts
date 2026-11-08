@@ -133,6 +133,7 @@ export function slugify(text: string): string {
 export function extractWorksCited(rawMarkdown: string): {
   cleanedBody: string;
   sources: SanitySourceItem[];
+  worksCitedMarkdown: string;
 } {
   const worksCitedPattern =
     /(?:^|\n)(?:#{1,4}\s*(?:Works cited|Works Cited|References|Bibliography)[\s\S]*)$/i;
@@ -140,10 +141,18 @@ export function extractWorksCited(rawMarkdown: string): {
 
   let body = rawMarkdown;
   let citationsBlock = "";
+  let headingPrefix = "####";
+  let headingTitle = "Works cited";
 
   if (match) {
     body = rawMarkdown.slice(0, match.index).trim();
     citationsBlock = match[0];
+
+    const headingMatch = /^(#{1,4})\s*([^\n]+)/.exec(citationsBlock.trim());
+    if (headingMatch) {
+      headingPrefix = headingMatch[1];
+      headingTitle = headingMatch[2].trim();
+    }
   }
 
   const rawSources: { title: string; uri: string }[] = [];
@@ -154,13 +163,38 @@ export function extractWorksCited(rawMarkdown: string): {
     const line = rawLine.trim();
     if (!line) continue;
 
-    // 1. Markdown link [Title](https://...)
+    // 1. Markdown link [Title](https://...) or Title, [URL](URL)
     const mdLinkMatch = /\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/.exec(line);
     if (mdLinkMatch) {
       const uri = mdLinkMatch[2].replace(/[.,;)]+$/, "");
       if (!seenUrls.has(uri)) {
         seenUrls.add(uri);
-        rawSources.push({ title: mdLinkMatch[1].trim(), uri });
+
+        const beforeLink = line.slice(0, mdLinkMatch.index).trim();
+        let cleanTitle = beforeLink
+          .replace(/^>*\s*(?:[-*•]|\d+[.)\]])\s*/, "") // Strip leading numbers with delimiter, bullets, blockquotes
+          .replace(/,?\s*accessed\s+[A-Za-z0-9,\s]+$/i, "") // Strip access date
+          .replace(/\baccessed\s+[A-Za-z0-9,\s]+$/i, "")
+          .replace(/[:\-–—.,\s]+$/, "")
+          .trim();
+
+        if (!cleanTitle) {
+          const linkText = mdLinkMatch[1].trim();
+          if (!linkText.startsWith("http://") && !linkText.startsWith("https://")) {
+            cleanTitle = linkText;
+          }
+        }
+
+        if (!cleanTitle || cleanTitle.toLowerCase() === "link") {
+          try {
+            const u = new URL(uri);
+            cleanTitle = u.hostname.replace(/^www\./, "") + (u.pathname !== "/" ? u.pathname : "");
+          } catch {
+            cleanTitle = uri;
+          }
+        }
+
+        rawSources.push({ title: cleanTitle, uri });
       }
       continue;
     }
@@ -174,7 +208,7 @@ export function extractWorksCited(rawMarkdown: string): {
 
       const beforeUrl = line.slice(0, urlMatch.index).trim();
       let cleanTitle = beforeUrl
-        .replace(/^\s*[-*•0-9.]+\s*/, "") // Strip leading numbers/bullets
+        .replace(/^>*\s*(?:[-*•]|\d+[.)\]])\s*/, "") // Strip leading numbers with delimiter, bullets, blockquotes
         .replace(/,?\s*accessed\s+[A-Za-z0-9,\s]+$/i, "") // Strip access date
         .replace(/\baccessed\s+[A-Za-z0-9,\s]+$/i, "")
         .replace(/[:\-–—.,\s]+$/, "")
@@ -204,7 +238,16 @@ export function extractWorksCited(rawMarkdown: string): {
     };
   });
 
-  return { cleanedBody: body, sources };
+  // Format clean numbered markdown bibliography to preserve Works Cited in the article content
+  let worksCitedMarkdown = "";
+  if (rawSources.length > 0) {
+    const listItems = rawSources
+      .map((s, idx) => `${idx + 1}. [${s.title}](${s.uri})`)
+      .join("\n");
+    worksCitedMarkdown = `${headingPrefix} ${headingTitle}\n\n${listItems}`;
+  }
+
+  return { cleanedBody: body, sources, worksCitedMarkdown };
 }
 
 /**
@@ -264,13 +307,18 @@ export function parseDocument(
   const rawContent = readFileSync(inputPath, "utf-8");
 
   // 1. Separate bibliography & assign 1-based indexed sources
-  const { cleanedBody, sources } = extractWorksCited(rawContent);
+  const { cleanedBody, sources, worksCitedMarkdown } = extractWorksCited(rawContent);
 
   // 2. Sanitize math blocks
   const { sanitized: mathCleanedBody, equationCount } = sanitizeKaTeXMath(cleanedBody);
 
   // 3. Format superscript citations
-  const bodyMarkdown = normalizeSuperscriptCitations(mathCleanedBody);
+  const normalizedBody = normalizeSuperscriptCitations(mathCleanedBody);
+
+  // 4. Combine body with preserved, formatted Works Cited section
+  const bodyMarkdown = worksCitedMarkdown
+    ? `${normalizedBody.trim()}\n\n${worksCitedMarkdown}`
+    : normalizedBody;
 
   // 4. Infer title
   let title = overrides?.title;
@@ -368,10 +416,26 @@ export async function syncPostToSanity(
       hide: false,
     };
 
-    if (options.authorId || process.env.SANITY_BLOG_AUTHOR_ID) {
+    // Resolve author reference safely
+    let authorRefId = options.authorId || process.env.SANITY_BLOG_AUTHOR_ID;
+    if (authorRefId) {
+      const authorDoc = await client.getDocument(authorRefId);
+      if (!authorDoc) {
+        console.warn(
+          `[Sanity Sync] Configured author ID '${authorRefId}' not found on '${dataset}'. Resolving primary author...`
+        );
+        const primaryAuthor = await client.fetch<string | null>(`*[_type == "author"][0]._id`);
+        authorRefId = primaryAuthor || undefined;
+      }
+    } else {
+      const primaryAuthor = await client.fetch<string | null>(`*[_type == "author"][0]._id`);
+      authorRefId = primaryAuthor || undefined;
+    }
+
+    if (authorRefId) {
       docPayload.author = {
         _type: "reference",
-        _ref: options.authorId || process.env.SANITY_BLOG_AUTHOR_ID,
+        _ref: authorRefId,
       };
     }
 
@@ -403,9 +467,17 @@ export async function syncPostToSanity(
     } else {
       // Create new document
       docPayload.date = new Date().toISOString();
-      const created = await client.create(docPayload);
-      finalId = created._id;
-      console.info(`[Sanity Sync] Created new document '${finalId}' on '${dataset}'.`);
+      if (targetId) {
+        docPayload._id = targetId;
+        const created = await client.createIfNotExists(docPayload);
+        finalId = created._id;
+        console.info(`[Sanity Sync] Created document with ID '${finalId}' on '${dataset}'.`);
+      } else {
+        const created = await client.create(docPayload);
+        finalId = created._id;
+        targetId = finalId; // Propagate ID to subsequent datasets
+        console.info(`[Sanity Sync] Created new document '${finalId}' on '${dataset}'.`);
+      }
     }
 
     if (finalId) {

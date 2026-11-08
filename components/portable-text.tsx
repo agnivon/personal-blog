@@ -39,10 +39,29 @@ function DisplayMathCard({ math }: { math: string }) {
   );
 }
 
+function renderTextWithBreaks(rawText: string, keyPrefix: string): React.ReactNode[] {
+  if (!rawText.includes("\n")) return [rawText];
+  const lines = rawText.split("\n");
+  const nodes: React.ReactNode[] = [];
+  lines.forEach((line, i) => {
+    if (i > 0) {
+      nodes.push(<br key={`${keyPrefix}-br-${i}`} />);
+    }
+    if (line) {
+      nodes.push(line);
+    }
+  });
+  return nodes;
+}
+
 const inlineMathRegex = /\$(?!\s)([^\$\n]+?)(?<!\s)\$|\\\(([\s\S]+?)\\\)/g;
 
 function renderMathString(text: string): React.ReactNode {
   if (!text.includes("$") && !text.includes("\\(") && !text.includes("\\text{")) {
+    if (text.includes("\n")) {
+      const parts = renderTextWithBreaks(text, "txt");
+      return parts.length === 1 ? parts[0] : parts;
+    }
     return text;
   }
 
@@ -67,7 +86,12 @@ function renderMathString(text: string): React.ReactNode {
       (hasMathIndicators || !/\b(to|and|or|in|is|of|for)\b/.test(mathContent));
 
     if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
+      parts.push(
+        ...renderTextWithBreaks(
+          text.slice(lastIndex, match.index),
+          `txt-${lastIndex}`
+        )
+      );
     }
 
     if (isMath) {
@@ -94,7 +118,9 @@ function renderMathString(text: string): React.ReactNode {
   }
 
   if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
+    parts.push(
+      ...renderTextWithBreaks(text.slice(lastIndex), `end-${lastIndex}`)
+    );
   }
 
   return parts.length === 1 ? parts[0] : parts;
@@ -121,6 +147,69 @@ function renderMathInNodes(children: React.ReactNode): React.ReactNode {
   });
 }
 
+function renderCellHtml(cellContent: string): React.ReactNode {
+  if (!cellContent) return "";
+
+  const tagRegex = /<(strong|b|em|i|sup|sub|code)>([\s\S]*?)<\/\1>/gi;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = tagRegex.exec(cellContent)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(renderMathString(cellContent.slice(lastIndex, match.index)));
+    }
+    const tag = match[1].toLowerCase();
+    const innerText = match[2];
+    const key = `cell-${match.index}`;
+
+    if (tag === "sup") {
+      parts.push(
+        <sup
+          key={key}
+          className="text-[0.7em] font-semibold text-blue-600 dark:text-blue-400 ml-0.5 leading-none align-super"
+        >
+          {innerText}
+        </sup>
+      );
+    } else if (tag === "sub") {
+      parts.push(
+        <sub
+          key={key}
+          className="text-[0.7em] font-semibold text-muted-foreground ml-0.5 leading-none align-sub"
+        >
+          {innerText}
+        </sub>
+      );
+    } else if (tag === "strong" || tag === "b") {
+      parts.push(
+        <strong key={key} className="font-semibold text-foreground">
+          {renderMathString(innerText)}
+        </strong>
+      );
+    } else if (tag === "em" || tag === "i") {
+      parts.push(
+        <em key={key} className="italic text-foreground">
+          {renderMathString(innerText)}
+        </em>
+      );
+    } else if (tag === "code") {
+      parts.push(
+        <code key={key} className="rounded bg-muted px-1 py-0.5 text-xs font-mono">
+          {innerText}
+        </code>
+      );
+    }
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < cellContent.length) {
+    parts.push(renderMathString(cellContent.slice(lastIndex)));
+  }
+
+  return parts.length === 1 ? parts[0] : parts;
+}
+
 export default function CustomPortableText({
   className,
   value,
@@ -129,6 +218,50 @@ export default function CustomPortableText({
   value: PortableTextBlock[];
 }) {
   const components: PortableTextComponents = {
+    types: {
+      table: ({
+        value: tableVal,
+      }: {
+        value?: { rows?: { _key: string; cells: string[] }[] };
+      }) => {
+        const rows = tableVal?.rows || [];
+        if (!rows.length) return null;
+        const headerRow = rows[0]?.cells || [];
+        const bodyRows = rows.slice(1);
+        return (
+          <div className="my-8 not-prose overflow-x-auto rounded-2xl border border-border/60 bg-card/60 shadow-xs backdrop-blur-xs">
+            <table className="w-full border-collapse text-left text-sm">
+              <thead className="border-b border-border/60 bg-muted/50 font-serif font-bold text-foreground">
+                <tr>
+                  {headerRow.map((cell: string, idx: number) => (
+                    <th key={idx} className="px-4 py-3.5 tracking-tight font-semibold">
+                      {renderCellHtml(cell)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/40">
+                {bodyRows.map((r, rIdx) => (
+                  <tr
+                    key={r._key || rIdx}
+                    className="hover:bg-muted/20 transition-colors"
+                  >
+                    {(r.cells || []).map((cell: string, cIdx: number) => (
+                      <td
+                        key={cIdx}
+                        className="px-4 py-3.5 align-top leading-relaxed text-muted-foreground"
+                      >
+                        {renderCellHtml(cell)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      },
+    },
     block: {
       normal: ({ children, value }) => {
         const text =
