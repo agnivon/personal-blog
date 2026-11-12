@@ -511,6 +511,7 @@ export async function syncPostToSanity(
 ): Promise<{ updatedDatasets: string[]; postIds: Record<string, string> }> {
   const postIds: Record<string, string> = {};
   const updatedDatasets: string[] = [];
+  let sharedCoverImage: unknown = undefined;
 
   const rawBlocks = markdownToPortableText(doc.bodyMarkdown);
   const portableTextBlocks = splitBlocksByNewlines(rawBlocks);
@@ -544,6 +545,7 @@ export async function syncPostToSanity(
       content: portableTextBlocks,
       sources: doc.sources,
       hide: false,
+      date: new Date().toISOString(),
     };
 
     // Resolve author reference safely
@@ -570,9 +572,15 @@ export async function syncPostToSanity(
     }
 
     // Preserve existing coverImage
-    if (options.preserveCoverImage && existingDoc?.coverImage) {
-      docPayload.coverImage = existingDoc.coverImage;
-      console.info(`[Sanity Sync] Preserved existing coverImage on '${dataset}'.`);
+    if (options.preserveCoverImage) {
+      if (existingDoc?.coverImage) {
+        sharedCoverImage = existingDoc.coverImage;
+        docPayload.coverImage = existingDoc.coverImage;
+        console.info(`[Sanity Sync] Preserved existing coverImage on '${dataset}'.`);
+      } else if (sharedCoverImage) {
+        docPayload.coverImage = sharedCoverImage;
+        console.info(`[Sanity Sync] Propagated coverImage from earlier dataset to '${dataset}'.`);
+      }
     }
 
     if (options.dryRun) {
