@@ -133,3 +133,31 @@ r \times B > C
 $$
 ```
 Inline form: `$r \times B > C$` or `$c < br$`.
+
+---
+
+## 6. HTML Entity Escaping in Table Cells & KaTeX (`&gt;`, `&lt;`, `&amp;`)
+
+### Root Cause
+When tables containing mathematical inequalities (e.g. `> 1 day`, `< 0.05`) are compiled through Markdown parsers (like `marked.parse`), standard characters like `>` and `<` are automatically converted to HTML entities (`&gt;` and `&lt;`).
+
+When a table cell passes this text into KaTeX inline math parsing:
+```
+KaTeX parse error: Expected 'EOF', got '&' at position 1: &gt; 1
+```
+In LaTeX, `&` is a reserved alignment delimiter (used in matrices and `align` blocks). KaTeX cannot parse `&gt; 1` as valid math. Because `throwOnError: false` is enabled, KaTeX falls back to rendering the raw text string `$&gt; 1$`, causing the literal code `&gt; 1` to be visibly printed in table cells on the website.
+
+### Prevention & Remediation
+1. **Component-Level Entity Decoding**:
+   [`components/portable-text.tsx`](../../../../components/portable-text.tsx) includes pre-parsing entity decoding inside `renderCellHtml`:
+   ```typescript
+   const decodedContent = cellContent
+     .replace(/&gt;/g, ">")
+     .replace(/&lt;/g, "<")
+     .replace(/&amp;/g, "&")
+     .replace(/&quot;/g, '"')
+     .replace(/&#39;/g, "'");
+   ```
+2. **Ingestion Formatting**:
+   In Google Doc processing scripts, wrap numerical inequalities in clean inline math with spaces (e.g. `$ > 1 $` or `$ < 0.05 $`), and ensure data patches to Sanity use unescaped `>` and `<` characters within table cell strings.
+

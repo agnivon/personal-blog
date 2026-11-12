@@ -103,8 +103,11 @@ When working on Convex code, **always read `convex/_generated/ai/guidelines.md` 
     1. **Line Breaks Must Be Preserved**: Distinct paragraphs must remain separate Portable Text blocks (`style: "normal"`). Blocks with trapped newlines must be split with `splitBlocksByNewlines()`. Soft line breaks are rendered via `<br />`.
     2. **Tables Must Be Displayed As Is**: Tables must be preserved and rendered as native Sanity `table` and `tableRow` objects. Never convert tables to bullet lists or summaries unless explicitly instructed otherwise.
     3. **Works Cited Must Be Displayed As Is**: The full numbered bibliography must be rendered in the body under `#### Works cited` and synchronized uncapped to `post.sources`, unless explicitly instructed otherwise.
-    4. **Cover Image Preservation**: Never overwrite or delete existing cover art (`existing.coverImage`).
+    4. **Cover Image Preservation & Parity**: Never overwrite or delete existing cover art (`existing.coverImage`). Propagate existing cover art across datasets to maintain visual parity.
     5. **KaTeX Currency Escaping**: In LaTeX math mode, all literal currency symbols must be escaped as `\$` to prevent KaTeX red error rendering.
+    6. **Diagrams and Flowcharts Must Be Represented Cleanly**: Never leave raw ASCII box art in published posts. Transform flowcharts into responsive Neo-Minimalist components with stage badges and icons.
+    7. **Table Cell Entity & Math Hygiene**: Ensure mathematical inequalities (`>`, `<`) in table cells do not leak raw HTML entities (`&gt;`, `&lt;`) into KaTeX or the DOM.
+    8. **Publication Timestamp**: Always set `date: new Date().toISOString()` on publish/patch so newly imported posts sort properly as the Featured Post on the homepage.
 - **Next.js 16 Visual Editing & Draft Mode**:
   - Real-time preview is mounted via `presentationTool` with `defineDocuments` and `defineLocations`.
   - In `app/(blog)/posts/[slug]/page.tsx`, `generateStaticParams` must use `perspective: "published"` and `stega: false` to ensure clean, un-encoded slug strings during static export.
